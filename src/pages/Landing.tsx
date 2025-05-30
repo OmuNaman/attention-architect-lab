@@ -480,13 +480,7 @@ export default function Landing() {
                     `} />
                     
                     <div className="relative z-10">
-                      <div className={`
-                        inline-flex p-3 rounded-xl mb-4
-                        ${isDark ? 'bg-slate-700/50' : 'bg-slate-100'}
-                      `}>
-                        <module.icon className={`w-6 h-6 bg-gradient-to-r ${module.gradient} bg-clip-text text-transparent`} />
-                      </div>
-                      
+                      <module.icon className={`w-6 h-6 float-right bg-gradient-to-r ${module.gradient} bg-clip-text text-transparent mb-2`} />
                       <h3 className={`text-xl font-semibold mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                         {module.title}
                       </h3>
@@ -798,13 +792,7 @@ export default function Landing() {
                     `} />
                     
                     <div className="relative z-10">
-                      <div className={`
-                        inline-flex p-3 rounded-xl mb-4
-                        ${isDark ? 'bg-slate-700/50' : 'bg-slate-100'}
-                      `}>
-                        <module.icon className={`w-6 h-6 bg-gradient-to-r ${module.gradient} bg-clip-text text-transparent`} />
-                      </div>
-                      
+                      <module.icon className={`w-6 h-6 float-right bg-gradient-to-r ${module.gradient} bg-clip-text text-transparent mb-2`} />
                       <h3 className={`text-xl font-semibold mb-3 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                         {module.title}
                       </h3>
