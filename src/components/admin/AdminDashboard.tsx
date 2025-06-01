@@ -30,8 +30,6 @@ import {
   BarChart3,
   Search,
   Download,
-  Eye,
-  Mail,
   TrendingUp,
   Award,
   Clock,
@@ -776,12 +774,6 @@ export function AdminDashboard() {
 
                         {/* Actions */}
                         <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm">
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            <Mail className="w-4 h-4" />
-                          </Button>
                           <Button
                             variant="outline"
                             size="sm"
