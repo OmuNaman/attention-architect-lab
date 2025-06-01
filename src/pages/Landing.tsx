@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { motion, useScroll, useTransform, useMotionValue } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -50,29 +50,27 @@ function ParallaxText({
   children: string;
   baseVelocity?: number;
 }) {
-  const baseX = useMotionValue(0);
-
-  useEffect(() => {
-    let timeoutId: number;
-    function animate() {
-      const x = baseX.get();
-      if (x <= -100) {
-        baseX.set(0);
-      } else {
-        baseX.set(x - baseVelocity * 0.02);
-      }
-      timeoutId = requestAnimationFrame(animate);
-    }
-    timeoutId = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(timeoutId);
-  }, [baseVelocity, baseX]);
-
   return (
     <div className="overflow-hidden whitespace-nowrap flex items-center">
-      <motion.div style={{ x: baseX }} className="flex whitespace-nowrap">
-        <span className="block mr-12">{children}</span>
-        <span className="block mr-12">{children}</span>
-        <span className="block mr-12">{children}</span>
+      <motion.div
+        className="flex whitespace-nowrap"
+        animate={{
+          x: [0, -1000],
+        }}
+        transition={{
+          x: {
+            repeat: Infinity,
+            repeatType: "loop",
+            duration: 20,
+            ease: "linear",
+          },
+        }}
+      >
+        <span className="block mr-12 flex-shrink-0">{children}</span>
+        <span className="block mr-12 flex-shrink-0">{children}</span>
+        <span className="block mr-12 flex-shrink-0">{children}</span>
+        <span className="block mr-12 flex-shrink-0">{children}</span>
+        <span className="block mr-12 flex-shrink-0">{children}</span>
       </motion.div>
     </div>
   );
@@ -186,7 +184,6 @@ export default function Landing() {
   const { user } = useAuth();
   const { isDark } = useTheme();
   const { scrollYProgress } = useScroll();
-  const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
