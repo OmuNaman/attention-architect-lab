@@ -10,6 +10,7 @@ import Dashboard from "./pages/Dashboard";
 import Learning from "./pages/Learning";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import { AdminDashboard } from "./components/admin/AdminDashboard";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => (
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/learning" element={<Learning />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/admin" element={<AdminDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
