@@ -7,6 +7,7 @@ import {
   useSpring,
 } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -234,6 +235,7 @@ export default function Landing() {
   const [isDark, setIsDark] = useState(true);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { scrollYProgress } = useScroll();
   const sectionY = useTransform(scrollYProgress, [0, 1], [0, 200]);
   const sectionOpacity = useTransform(scrollYProgress, [0.3, 0.4], [0, 1]);
@@ -294,7 +296,13 @@ export default function Landing() {
   ];
 
   const handleStartLearning = () => {
-    navigate("/learning");
+    if (user) {
+      // User is already authenticated, go directly to learning
+      navigate("/learning");
+    } else {
+      // User is not authenticated, redirect to auth
+      navigate("/auth");
+    }
   };
 
   const features: Feature[] = [
