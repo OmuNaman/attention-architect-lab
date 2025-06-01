@@ -1,4 +1,4 @@
-import Landing from './Landing';
+import Landing from "./Landing";
 
 const Index = () => {
   return <Landing />;

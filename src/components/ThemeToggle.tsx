@@ -1,16 +1,13 @@
+import { Button } from "@/components/ui/button";
+import { Sun, Moon } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
 
-import { Button } from '@/components/ui/button';
-import { Sun, Moon } from 'lucide-react';
+export function ThemeToggle() {
+  const { isDark, toggleTheme } = useTheme();
 
-interface ThemeToggleProps {
-  isDark: boolean;
-  onToggle: (isDark: boolean) => void;
-}
-
-export function ThemeToggle({ isDark, onToggle }: ThemeToggleProps) {
   return (
     <Button
-      onClick={() => onToggle(!isDark)}
+      onClick={toggleTheme}
       variant="outline"
       size="sm"
       className="w-10 h-10 p-0"
