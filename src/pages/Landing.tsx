@@ -6,7 +6,7 @@ import {
   useMotionValue,
   useSpring,
 } from "framer-motion";
-import { SelfAttentionWorkflow } from "@/components/SelfAttentionWorkflow";
+import { useNavigate } from "react-router-dom";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -232,8 +232,8 @@ function AIConceptVisual({ isDark }: { isDark: boolean }) {
 
 export default function Landing() {
   const [isDark, setIsDark] = useState(true);
-  const [selectedModule, setSelectedModule] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const navigate = useNavigate();
   const { scrollYProgress } = useScroll();
   const sectionY = useTransform(scrollYProgress, [0, 1], [0, 200]);
   const sectionOpacity = useTransform(scrollYProgress, [0.3, 0.4], [0, 1]);
@@ -293,13 +293,9 @@ export default function Landing() {
     },
   ];
 
-  if (selectedModule === "self-attention") {
-    return (
-      <ThemeProvider isDark={isDark}>
-        <SelfAttentionWorkflow />
-      </ThemeProvider>
-    );
-  }
+  const handleStartLearning = () => {
+    navigate("/learning");
+  };
 
   const features: Feature[] = [
     {
@@ -547,8 +543,7 @@ export default function Landing() {
                       transition-all duration-300 hover:scale-105 hover:shadow-xl
                     `}
                     onClick={() =>
-                      module.status === "available" &&
-                      setSelectedModule(module.id)
+                      module.status === "available" && handleStartLearning()
                     }
                     style={{
                       transform: `perspective(1000px) rotateX(${
@@ -910,8 +905,7 @@ export default function Landing() {
                       transition-all duration-300 hover:scale-105 hover:shadow-xl
                     `}
                     onClick={() =>
-                      module.status === "available" &&
-                      setSelectedModule(module.id)
+                      module.status === "available" && handleStartLearning()
                     }
                     style={{
                       transform: `perspective(1000px) rotateX(${
@@ -1068,7 +1062,7 @@ export default function Landing() {
           transition={{ delay: 1 }}
         >
           <Button
-            onClick={() => setSelectedModule("self-attention")}
+            onClick={handleStartLearning}
             size="lg"
             className={`
               px-6 py-6 text-lg rounded-full
