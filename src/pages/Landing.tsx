@@ -313,7 +313,51 @@ export default function Landing() {
               Vizuara AI Lab
             </h1>
           </motion.div>
-          <ThemeToggle />
+
+          <div className="flex items-center gap-4">
+            {user ? (
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/dashboard")}
+                  className={`transition-colors duration-300 ${
+                    isDark
+                      ? "border-slate-600 text-slate-300 hover:bg-slate-700"
+                      : "border-slate-300 text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  Dashboard
+                </Button>
+                <Button
+                  onClick={() => navigate("/learning")}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+                >
+                  Continue Learning
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  onClick={() => navigate("/auth")}
+                  className={`transition-colors duration-300 ${
+                    isDark
+                      ? "text-slate-300 hover:bg-slate-700"
+                      : "text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  Login
+                </Button>
+                <Button
+                  onClick={() => navigate("/auth")}
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white"
+                >
+                  Sign Up
+                </Button>
+              </div>
+            )}
+            <ThemeToggle />
+          </div>
         </div>
       </motion.nav>
 
