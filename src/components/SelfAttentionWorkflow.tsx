@@ -14,7 +14,7 @@ import {
 import "@xyflow/react/dist/style.css";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { ThemeProvider } from "@/components/ThemeProvider";
+import { useTheme } from "@/contexts/ThemeContext";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, MessageSquare, User } from "lucide-react";
@@ -31,19 +31,14 @@ const nodeTypes = {
   calculation: CalculationNode,
 };
 
-function WorkflowContent({
-  isDark,
-  onToggleTheme,
-}: {
-  isDark: boolean;
-  onToggleTheme: (isDark: boolean) => void;
-}) {
+function WorkflowContent() {
   const [completedNodeIds, setCompletedNodeIds] = useState<Set<string>>(
     new Set()
   );
   const [isChatOpen, setIsChatOpen] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isDark } = useTheme();
 
   const handleNodeComplete = useCallback((nodeId: string) => {
     setCompletedNodeIds((prev) => new Set(prev).add(nodeId));
@@ -184,7 +179,7 @@ function WorkflowContent({
               Profile
             </Button>
           )}
-          <ThemeToggle isDark={isDark} onToggle={onToggleTheme} />
+          <ThemeToggle />
         </div>
       </div>
 
@@ -246,15 +241,5 @@ function WorkflowContent({
 }
 
 export function SelfAttentionWorkflow() {
-  const [isDark, setIsDark] = useState(true);
-
-  const handleThemeToggle = (newIsDark: boolean) => {
-    setIsDark(newIsDark);
-  };
-
-  return (
-    <ThemeProvider isDark={isDark}>
-      <WorkflowContent isDark={isDark} onToggleTheme={handleThemeToggle} />
-    </ThemeProvider>
-  );
+  return <WorkflowContent />;
 }
