@@ -1,11 +1,5 @@
 import { useState, useEffect } from "react";
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useMotionValue,
-  useSpring,
-} from "framer-motion";
+import { motion, useScroll, useTransform, useMotionValue } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -19,7 +13,6 @@ import {
   Sparkles,
   ArrowRight,
   GitBranch,
-  MousePointer2,
   Code,
   Lightbulb,
   Zap,
@@ -48,13 +41,6 @@ interface SocialLink {
   icon: LucideIcon;
   label: string;
   href: string;
-}
-
-interface Particle {
-  id: number;
-  x: number;
-  y: number;
-  text: string;
 }
 
 function ParallaxText({
@@ -92,59 +78,21 @@ function ParallaxText({
   );
 }
 
-function CodeParticles() {
-  const particles: Particle[] = [
-    { id: 1, x: 10, y: 20, text: "matrix[i][j]" },
-    { id: 2, x: 80, y: 40, text: "attention" },
-    { id: 3, x: 30, y: 70, text: "softmax()" },
-    { id: 4, x: 60, y: 90, text: "q * k.T" },
-    { id: 5, x: 40, y: 30, text: "neural" },
-  ];
-
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      {particles.map((particle) => (
-        <motion.div
-          key={particle.id}
-          className={`absolute text-sm font-mono opacity-20`}
-          initial={{
-            x: `${particle.x}%`,
-            y: `${particle.y}%`,
-            opacity: 0.2,
-          }}
-          animate={{
-            y: [`${particle.y}%`, `${particle.y - 20}%`, `${particle.y}%`],
-            opacity: [0.2, 0.5, 0.2],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "linear",
-            delay: particle.id * 2,
-          }}
-        >
-          {particle.text}
-        </motion.div>
-      ))}
-    </div>
-  );
-}
-
 function FeatureCard({
   feature,
-  isDark,
 }: {
   feature: { icon: LucideIcon; title: string; description: string };
-  isDark: boolean;
 }) {
+  const { isDark } = useTheme();
+
   return (
     <motion.div
       whileHover={{ y: -5 }}
-      className={`p-6 rounded-xl ${
-        isDark ? "bg-slate-800/50" : "bg-white"
-      } border ${
-        isDark ? "border-slate-700" : "border-slate-200"
-      } transition-colors duration-300`}
+      className={`p-6 rounded-xl transition-all duration-300 ${
+        isDark
+          ? "bg-slate-800/50 border-slate-700 hover:bg-slate-800/70"
+          : "bg-white border-slate-200 hover:bg-slate-50"
+      } border shadow-lg hover:shadow-xl`}
     >
       <div
         className={`mb-4 inline-flex p-3 rounded-lg ${
@@ -167,7 +115,8 @@ function FeatureCard({
   );
 }
 
-function AIConceptVisual({ isDark }: { isDark: boolean }) {
+function AIConceptVisual() {
+  const { isDark } = useTheme();
   const nodeCount = 6;
   const radius = 120;
   const center = { x: 150, y: 150 };
@@ -237,17 +186,13 @@ export default function Landing() {
   const { user } = useAuth();
   const { isDark } = useTheme();
   const { scrollYProgress } = useScroll();
-  const sectionY = useTransform(scrollYProgress, [0, 1], [0, 200]);
-  const sectionOpacity = useTransform(scrollYProgress, [0.3, 0.4], [0, 1]);
-
   const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "50%"]);
-  const textY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       setMousePosition({
-        x: (e.clientX - window.innerWidth / 2) / 25,
-        y: (e.clientY - window.innerHeight / 2) / 25,
+        x: (e.clientX - window.innerWidth / 2) / 15,
+        y: (e.clientY - window.innerHeight / 2) / 15,
       });
     };
     window.addEventListener("mousemove", handleMouseMove);
@@ -297,10 +242,8 @@ export default function Landing() {
 
   const handleStartLearning = () => {
     if (user) {
-      // User is already authenticated, go directly to learning
       navigate("/learning");
     } else {
-      // User is not authenticated, redirect to auth
       navigate("/auth");
     }
   };
@@ -325,11 +268,6 @@ export default function Landing() {
         "Engage with each concept through hands-on manipulation and visualization.",
     },
   ];
-  const interactiveElements: string[] = [
-    "Interactive matrix operations",
-    "Real-time attention visualization",
-    "Step-by-step concept breakdown",
-  ];
 
   const socialLinks: SocialLink[] = [
     { icon: GitBranch, label: "GitHub", href: "#" },
@@ -339,68 +277,24 @@ export default function Landing() {
 
   return (
     <div
-      className={`min-h-screen ${
+      className={`min-h-screen transition-colors duration-300 relative overflow-hidden ${
         isDark ? "bg-slate-900" : "bg-gray-50"
-      } transition-colors duration-300 relative overflow-hidden`}
+      }`}
     >
       {/* Animated Background Grid */}
       <div
-        className="absolute inset-0 pointer-events-none transition-transform duration-200"
+        className="fixed inset-0 pointer-events-none transition-transform duration-200"
         style={{
           transform: `translate(${mousePosition.x}px, ${mousePosition.y}px)`,
           backgroundImage: `radial-gradient(${
-            isDark ? "rgb(255 255 255 / 0.075)" : "rgb(0 0 0 / 0.075)"
-          } 1px, transparent 1px)`,
+            isDark ? "rgb(255 255 255 / 0.15)" : "rgb(0 0 0 / 0.15)"
+          } 1.5px, transparent 1.5px)`,
           backgroundSize: "40px 40px",
           backgroundPosition: "-20px -20px",
         }}
       />
 
-      {/* Animated Gradient Orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className={`absolute w-[800px] h-[800px] rounded-full opacity-20 blur-3xl bg-gradient-to-r from-blue-500 to-purple-500`}
-          animate={{
-            x: [0, 100, 0],
-            y: [0, -100, 0],
-            scale: [1, 1.2, 1],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          style={{
-            top: "10%",
-            right: "10%",
-            transform: `translate(${mousePosition.x * -1}px, ${
-              mousePosition.y * -1
-            }px)`,
-          }}
-        />
-        <motion.div
-          className={`absolute w-[600px] h-[600px] rounded-full opacity-20 blur-3xl bg-gradient-to-r from-purple-500 to-blue-500`}
-          animate={{
-            x: [0, -100, 0],
-            y: [0, 100, 0],
-            scale: [1, 1.1, 1],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          style={{
-            bottom: "10%",
-            left: "10%",
-            transform: `translate(${mousePosition.x * -0.5}px, ${
-              mousePosition.y * -0.5
-            }px)`,
-          }}
-        />
-      </div>
-
-      {/* Header with Glass Effect */}
+      {/* Header */}
       <motion.nav
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -431,15 +325,12 @@ export default function Landing() {
         className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 text-sm text-slate-500"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1 }}
-      >
-        <MousePointer2 className="w-4 h-4" />
-        <span>Move mouse to interact with the background</span>
-      </motion.div>
+        transition={{ delay: 0.5 }}
+      ></motion.div>
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-6">
-        <motion.div className="max-w-7xl mx-auto" style={{ y: textY }}>
+        <motion.div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -502,11 +393,10 @@ export default function Landing() {
               visualizations
             </motion.p>
 
-            {/* Scrolling Text Banner */}
             <motion.div
-              className={`py-4 mb-12 ${
+              className={`py-4 mb-12 text-lg overflow-hidden ${
                 isDark ? "text-slate-400" : "text-slate-500"
-              } text-lg overflow-hidden`}
+              }`}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.6 }}
@@ -520,7 +410,7 @@ export default function Landing() {
         </motion.div>
       </section>
 
-      {/* Learning Modules Cards with 3D Effect */}
+      {/* Learning Modules Cards */}
       <section className="py-20 px-6 relative">
         <div className="max-w-7xl mx-auto">
           <motion.div
@@ -539,35 +429,18 @@ export default function Landing() {
                 viewport={{ once: true }}
               >
                 <Card
-                  className={`
-                      relative overflow-hidden p-6 cursor-pointer group
-                      ${
-                        isDark
-                          ? "bg-slate-800/50 hover:bg-slate-800/70"
-                          : "bg-white hover:bg-slate-50"
-                      }
-                      border ${isDark ? "border-slate-700" : "border-slate-200"}
-                      transition-all duration-300 hover:scale-105 hover:shadow-xl
-                    `}
+                  className={`relative overflow-hidden p-6 cursor-pointer group transition-all duration-300 hover:scale-105 hover:shadow-xl ${
+                    isDark
+                      ? "bg-slate-800/50 hover:bg-slate-800/70 border-slate-700"
+                      : "bg-white hover:bg-slate-50 border-slate-200"
+                  } border`}
                   onClick={() =>
                     module.status === "available" && handleStartLearning()
                   }
-                  style={{
-                    transform: `perspective(1000px) rotateX(${
-                      mousePosition.y * 0.02
-                    }deg) rotateY(${mousePosition.x * 0.02}deg)`,
-                  }}
                 >
-                  <div
-                    className={`
-                      absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300
-                      bg-gradient-to-r ${module.gradient}
-                    `}
-                  />
-
                   <div className="relative z-10">
                     <module.icon
-                      className={`w-6 h-6 float-right bg-gradient-to-r ${module.gradient} bg-clip-text text-transparent mb-2`}
+                      className={`w-8 h-8 mb-4 bg-gradient-to-r ${module.gradient} text-transparent bg-clip-text`}
                     />
                     <h3
                       className={`text-xl font-semibold mb-3 ${
@@ -585,14 +458,14 @@ export default function Landing() {
                       {module.description}
                     </p>
 
-                    <div className="mb-4">
+                    <div className="mb-6">
                       <ul
-                        className={`text-sm ${
+                        className={`text-sm space-y-1 ${
                           isDark ? "text-slate-400" : "text-slate-600"
                         }`}
                       >
                         {module.features.map((feature, i) => (
-                          <li key={i} className="flex items-center gap-2 mb-1">
+                          <li key={i} className="flex items-center gap-2">
                             <div
                               className={`w-1 h-1 rounded-full bg-gradient-to-r ${module.gradient}`}
                             />
@@ -604,19 +477,17 @@ export default function Landing() {
 
                     {module.status === "available" ? (
                       <Button
-                        className={`
-                            w-full group-hover:bg-gradient-to-r ${
-                              module.gradient
-                            }
-                            group-hover:text-white transition-all duration-300
-                            ${isDark ? "text-slate-300" : "text-slate-600"}
-                          `}
+                        className={`w-full bg-gradient-to-r ${module.gradient} text-white hover:opacity-90 transition-opacity shadow-lg hover:shadow-xl`}
                       >
                         <span>Start Learning</span>
                         <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                       </Button>
                     ) : (
-                      <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
+                      <div
+                        className={`flex items-center gap-2 text-sm font-medium ${
+                          isDark ? "text-slate-500" : "text-slate-400"
+                        }`}
+                      >
                         <GitBranch className="w-4 h-4" />
                         <span>Coming Soon</span>
                       </div>
@@ -631,7 +502,30 @@ export default function Landing() {
 
       {/* AI Concept Visualization Section */}
       <section className="py-24 px-6 relative overflow-hidden">
-        <CodeParticles />
+        {/* Subtle background decoration */}
+        <div className="absolute inset-0 pointer-events-none opacity-5">
+          <div
+            className={`absolute top-20 left-10 text-xs font-mono ${
+              isDark ? "text-blue-400" : "text-blue-600"
+            }`}
+          >
+            matrix
+          </div>
+          <div
+            className={`absolute bottom-32 right-16 text-xs font-mono ${
+              isDark ? "text-purple-400" : "text-purple-600"
+            }`}
+          >
+            attention
+          </div>
+          <div
+            className={`absolute top-1/2 left-1/4 text-xs font-mono ${
+              isDark ? "text-green-400" : "text-green-600"
+            }`}
+          >
+            neural
+          </div>
+        </div>
         <div className="max-w-7xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <motion.div
@@ -641,46 +535,43 @@ export default function Landing() {
               viewport={{ once: true }}
               className="relative"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl blur-3xl opacity-20 transform -rotate-6" />
-              <div className="relative">
-                <h2
-                  className={`text-3xl md:text-4xl font-bold mb-6 ${
-                    isDark ? "text-white" : "text-slate-900"
-                  }`}
-                >
-                  Experience AI Like Never Before
-                </h2>
-                <p
-                  className={`text-lg mb-8 ${
-                    isDark ? "text-slate-300" : "text-slate-600"
-                  }`}
-                >
-                  Our interactive visualizations transform complex mathematical
-                  concepts into intuitive, visual experiences. See how data
-                  flows through neural networks and understand the mathematics
-                  behind modern AI.
-                </p>
-                <div className="flex flex-col gap-4">
-                  {[
-                    "Interactive matrix operations",
-                    "Real-time attention visualization",
-                    "Step-by-step concept breakdown",
-                  ].map((item, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      viewport={{ once: true }}
-                      className={`flex items-center gap-3 ${
-                        isDark ? "text-slate-300" : "text-slate-600"
-                      }`}
-                    >
-                      <div className="h-1 w-1 rounded-full bg-blue-500" />
-                      <span>{item}</span>
-                    </motion.div>
-                  ))}
-                </div>
+              <h2
+                className={`text-3xl md:text-4xl font-bold mb-6 ${
+                  isDark ? "text-white" : "text-slate-900"
+                }`}
+              >
+                Experience AI Like Never Before
+              </h2>
+              <p
+                className={`text-lg mb-8 ${
+                  isDark ? "text-slate-300" : "text-slate-600"
+                }`}
+              >
+                Our interactive visualizations transform complex mathematical
+                concepts into intuitive, visual experiences. See how data flows
+                through neural networks and understand the mathematics behind
+                modern AI.
+              </p>
+              <div className="flex flex-col gap-4">
+                {[
+                  "Interactive matrix operations",
+                  "Real-time attention visualization",
+                  "Step-by-step concept breakdown",
+                ].map((item, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    className={`flex items-center gap-3 ${
+                      isDark ? "text-slate-300" : "text-slate-600"
+                    }`}
+                  >
+                    <div className="h-1 w-1 rounded-full bg-blue-500" />
+                    <span>{item}</span>
+                  </motion.div>
+                ))}
               </div>
             </motion.div>
 
@@ -691,34 +582,23 @@ export default function Landing() {
               viewport={{ once: true }}
               className="flex justify-center"
             >
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-3xl opacity-20" />
-                <AIConceptVisual isDark={isDark} />
-              </div>
+              <AIConceptVisual />
             </motion.div>
           </div>
         </div>
       </section>
 
-      {/* Features Section with improved spacing and transitions */}
+      {/* Features Section */}
       <section className="py-32 px-6 relative">
-        <motion.div
-          style={{
-            y: sectionY,
-            opacity: sectionOpacity,
-          }}
-          className="max-w-7xl mx-auto"
-        >
+        <div className="max-w-7xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            viewport={{ once: true, margin: "-100px" }}
+            viewport={{ once: true }}
             className="text-center mb-20"
           >
-            <h2
-              className={`text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500`}
-            >
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
               Powerful Learning Features
             </h2>
             <p
@@ -738,253 +618,12 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.2 }}
-                viewport={{ once: true, margin: "-100px" }}
-              >
-                <FeatureCard feature={feature} isDark={isDark} />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Interactive Elements Section with smooth animations */}
-      <section className="py-32 px-6 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <motion.div
-            animate={{
-              y: [0, -50, 0],
-            }}
-            transition={{
-              duration: 20,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          >
-            <CodeParticles />
-          </motion.div>
-        </div>
-
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true, margin: "-100px" }}
-            >
-              <div className="relative">
-                <motion.h2
-                  className={`text-4xl md:text-5xl font-bold mb-8 ${
-                    isDark ? "text-white" : "text-slate-900"
-                  }`}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8 }}
-                  viewport={{ once: true }}
-                >
-                  Master the Future of{" "}
-                  <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                    Machine Learning
-                  </span>
-                </motion.h2>
-                <div className="space-y-6">
-                  {[
-                    "Hands-on neural network exploration",
-                    "Interactive deep learning concepts",
-                    "Visual transformer architecture",
-                  ].map((item, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.2 }}
-                      viewport={{ once: true }}
-                      className={`flex items-center gap-4 ${
-                        isDark ? "text-slate-300" : "text-slate-600"
-                      }`}
-                    >
-                      <div className="h-2 w-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500" />
-                      <span className="text-lg">{item}</span>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true, margin: "-100px" }}
-              className="flex justify-center"
-            >
-              <div className="relative">
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full blur-3xl opacity-20"
-                  animate={{
-                    scale: [1, 1.2, 1],
-                  }}
-                  transition={{
-                    duration: 4,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                />
-                <AIConceptVisual isDark={isDark} />
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Learning Path Section */}
-      <section className="py-24 px-6 relative">
-        <motion.div
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage: `radial-gradient(circle at 50% 50%, ${
-              isDark ? "rgba(59, 130, 246, 0.2)" : "rgba(37, 99, 235, 0.1)"
-            } 1px, transparent 1px)`,
-            backgroundSize: "50px 50px",
-          }}
-          animate={{
-            backgroundPosition: ["0px 0px", "50px 50px"],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-        />
-
-        <div className="max-w-7xl mx-auto relative">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2
-              className={`text-3xl md:text-4xl font-bold mb-4 ${
-                isDark ? "text-white" : "text-slate-900"
-              }`}
-            >
-              Choose Your Path
-            </h2>
-            <p
-              className={`text-lg ${
-                isDark ? "text-slate-300" : "text-slate-600"
-              }`}
-            >
-              Start your journey into AI with our carefully crafted learning
-              modules
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          >
-            {modules.map((module, index) => (
-              <motion.div
-                key={module.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card
-                  className={`
-                      relative overflow-hidden p-6 cursor-pointer group
-                      ${
-                        isDark
-                          ? "bg-slate-800/50 hover:bg-slate-800/70"
-                          : "bg-white hover:bg-slate-50"
-                      }
-                      border ${isDark ? "border-slate-700" : "border-slate-200"}
-                      transition-all duration-300 hover:scale-105 hover:shadow-xl
-                    `}
-                  onClick={() =>
-                    module.status === "available" && handleStartLearning()
-                  }
-                  style={{
-                    transform: `perspective(1000px) rotateX(${
-                      mousePosition.y * 0.02
-                    }deg) rotateY(${mousePosition.x * 0.02}deg)`,
-                  }}
-                >
-                  <div
-                    className={`
-                      absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300
-                      bg-gradient-to-r ${module.gradient}
-                    `}
-                  />
-
-                  <div className="relative z-10">
-                    <module.icon
-                      className={`w-6 h-6 float-right bg-gradient-to-r ${module.gradient} bg-clip-text text-transparent mb-2`}
-                    />
-                    <h3
-                      className={`text-xl font-semibold mb-3 ${
-                        isDark ? "text-white" : "text-slate-900"
-                      }`}
-                    >
-                      {module.title}
-                    </h3>
-
-                    <p
-                      className={`text-sm mb-4 ${
-                        isDark ? "text-slate-400" : "text-slate-600"
-                      }`}
-                    >
-                      {module.description}
-                    </p>
-
-                    <div className="mb-4">
-                      <ul
-                        className={`text-sm ${
-                          isDark ? "text-slate-400" : "text-slate-600"
-                        }`}
-                      >
-                        {module.features.map((feature, i) => (
-                          <li key={i} className="flex items-center gap-2 mb-1">
-                            <div
-                              className={`w-1 h-1 rounded-full bg-gradient-to-r ${module.gradient}`}
-                            />
-                            {feature}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {module.status === "available" ? (
-                      <Button
-                        className={`
-                            w-full group-hover:bg-gradient-to-r ${
-                              module.gradient
-                            }
-                            group-hover:text-white transition-all duration-300
-                            ${isDark ? "text-slate-300" : "text-slate-600"}
-                          `}
-                      >
-                        <span>Start Learning</span>
-                        <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                      </Button>
-                    ) : (
-                      <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
-                        <GitBranch className="w-4 h-4" />
-                        <span>Coming Soon</span>
-                      </div>
-                    )}
-                  </div>
-                </Card>
+                <FeatureCard feature={feature} />
               </motion.div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </section>
 
@@ -1022,18 +661,14 @@ export default function Landing() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className={`
-                      group flex flex-col items-center gap-2 p-4 rounded-lg
-                      ${isDark ? "hover:bg-slate-800/50" : "hover:bg-slate-50"}
-                      transition-all duration-300
-                    `}
+                  className={`group flex flex-col items-center gap-2 p-4 rounded-lg transition-all duration-300 ${
+                    isDark ? "hover:bg-slate-800/50" : "hover:bg-slate-50"
+                  }`}
                 >
                   <div
-                    className={`
-                      p-4 rounded-full 
-                      ${isDark ? "bg-slate-800/50" : "bg-slate-100/80"}
-                      group-hover:scale-110 transition-transform duration-300
-                    `}
+                    className={`p-4 rounded-full group-hover:scale-110 transition-transform duration-300 ${
+                      isDark ? "bg-slate-800/50" : "bg-slate-100/80"
+                    }`}
                   >
                     <item.icon
                       className={`w-6 h-6 ${
@@ -1065,16 +700,7 @@ export default function Landing() {
         <Button
           onClick={handleStartLearning}
           size="lg"
-          className={`
-              px-6 py-6 text-lg rounded-full
-              bg-gradient-to-r from-blue-500 to-purple-500
-              hover:from-blue-600 hover:to-purple-600
-              text-white font-semibold
-              transition-all duration-300 ease-out
-              hover:scale-110 hover:shadow-2xl
-              ${isDark ? "shadow-blue-500/25" : "shadow-blue-500/20"}
-              group
-            `}
+          className="px-6 py-6 text-lg rounded-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white font-semibold transition-all duration-300 ease-out hover:scale-110 hover:shadow-2xl shadow-blue-500/20 group"
         >
           <span>Start Learning</span>
           <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
