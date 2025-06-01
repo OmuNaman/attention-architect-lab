@@ -7,6 +7,22 @@ import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAdmin } from "@/hooks/use-admin";
 import {
   Edit2,
@@ -23,6 +39,7 @@ import {
   ArrowLeft,
   Shield,
   AlertTriangle,
+  Plus,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -66,6 +83,13 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTab, setSelectedTab] = useState("overview");
+
+  // Edit states
+  const [editingStudent, setEditingStudent] = useState<Profile | null>(null);
+
+  // Dialog states
+  const [showAddStudentDialog, setShowAddStudentDialog] = useState(false);
+
   const { toast } = useToast();
   const { isDark } = useTheme();
   const navigate = useNavigate();
@@ -248,6 +272,43 @@ export function AdminDashboard() {
       toast({
         title: "Error",
         description: "Failed to update user role",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEditStudent = async (studentData: Partial<Profile>) => {
+    if (!editingStudent) return;
+
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          ...studentData,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", editingStudent.id);
+
+      if (error) throw error;
+
+      setStudents(
+        students.map((student) =>
+          student.id === editingStudent.id
+            ? { ...student, ...studentData }
+            : student
+        )
+      );
+
+      setEditingStudent(null);
+      toast({
+        title: "Success",
+        description: "Student updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating student:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update student",
         variant: "destructive",
       });
     }
@@ -609,6 +670,13 @@ export function AdminDashboard() {
                   />
                 </div>
                 <Button
+                  onClick={() => setShowAddStudentDialog(true)}
+                  className="bg-green-500 hover:bg-green-600"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Student
+                </Button>
+                <Button
                   onClick={fetchStudents}
                   className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
                 >
@@ -714,7 +782,11 @@ export function AdminDashboard() {
                           <Button variant="outline" size="sm">
                             <Mail className="w-4 h-4" />
                           </Button>
-                          <Button variant="outline" size="sm">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEditingStudent(student)}
+                          >
                             <Edit2 className="w-4 h-4" />
                           </Button>
                         </div>
@@ -851,6 +923,184 @@ export function AdminDashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Edit Student Dialog */}
+      <Dialog
+        open={!!editingStudent}
+        onOpenChange={() => setEditingStudent(null)}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Student</DialogTitle>
+            <DialogDescription>
+              Update student information below.
+            </DialogDescription>
+          </DialogHeader>
+          {editingStudent && (
+            <EditStudentForm
+              student={editingStudent}
+              onSave={handleEditStudent}
+              onCancel={() => setEditingStudent(null)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Student Dialog */}
+      <Dialog
+        open={showAddStudentDialog}
+        onOpenChange={setShowAddStudentDialog}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Student</DialogTitle>
+            <DialogDescription>Create a new student account.</DialogDescription>
+          </DialogHeader>
+          <AddStudentForm
+            onSave={(data) => {
+              // Note: In real implementation, you'd need to create user via auth
+              console.log("Add student:", data);
+              setShowAddStudentDialog(false);
+              toast({
+                title: "Note",
+                description:
+                  "Student creation via admin panel requires backend implementation",
+                variant: "default",
+              });
+            }}
+            onCancel={() => setShowAddStudentDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// Form Components
+function EditStudentForm({
+  student,
+  onSave,
+  onCancel,
+}: {
+  student: Profile;
+  onSave: (data: Partial<Profile>) => void;
+  onCancel: () => void;
+}) {
+  const [formData, setFormData] = useState({
+    full_name: student.full_name || "",
+    email: student.email || "",
+    role: student.role,
+  });
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="full_name">Full Name</Label>
+        <Input
+          id="full_name"
+          value={formData.full_name}
+          onChange={(e) =>
+            setFormData({ ...formData, full_name: e.target.value })
+          }
+        />
+      </div>
+      <div>
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        />
+      </div>
+      <div>
+        <Label htmlFor="role">Role</Label>
+        <Select
+          value={formData.role}
+          onValueChange={(value) =>
+            setFormData({ ...formData, role: value as "user" | "admin" })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="user">User</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button onClick={() => onSave(formData)}>Save Changes</Button>
+      </DialogFooter>
+    </div>
+  );
+}
+
+function AddStudentForm({
+  onSave,
+  onCancel,
+}: {
+  onSave: (data: {
+    full_name: string;
+    email: string;
+    role: "user" | "admin";
+  }) => void;
+  onCancel: () => void;
+}) {
+  const [formData, setFormData] = useState({
+    full_name: "",
+    email: "",
+    role: "user" as "user" | "admin",
+  });
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label htmlFor="full_name">Full Name</Label>
+        <Input
+          id="full_name"
+          value={formData.full_name}
+          onChange={(e) =>
+            setFormData({ ...formData, full_name: e.target.value })
+          }
+        />
+      </div>
+      <div>
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        />
+      </div>
+      <div>
+        <Label htmlFor="role">Role</Label>
+        <Select
+          value={formData.role}
+          onValueChange={(value) =>
+            setFormData({ ...formData, role: value as "user" | "admin" })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="user">User</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button onClick={() => onSave(formData)}>Create Student</Button>
+      </DialogFooter>
     </div>
   );
 }
