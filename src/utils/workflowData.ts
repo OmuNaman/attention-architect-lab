@@ -219,28 +219,6 @@ export const initialNodes: Node[] = [
     }
   },
 
-  // Head 1 Output (Column 5)
-  {
-    id: 'calc-head1-output',
-    type: 'calculation',
-    position: getPosition(5, 0.5, 0),
-    data: {
-      label: 'Head₁ Output',
-      formula: 'Head₁ = Attention₁ × V₁',
-      description: 'Final output for Head 1',
-      expectedMatrix: [
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1],
-        [0.2, 0.2, 0.2],
-        [0.2, 0.2, 0.2]
-      ],
-      hint: 'Multiply attention weights (5×5) with value matrix V₁ (5×3)',
-      headNumber: 1,
-      headColor: HEAD_COLORS[1]
-    }
-  },
-
   // ====================== HEAD 2 (TEAL) ======================
   // Weight Matrices - Head 2 (Column 1, offset by HEAD_VERTICAL_SPACING)
   {
@@ -399,28 +377,6 @@ export const initialNodes: Node[] = [
         [0.2, 0.2, 0.2, 0.2, 0.2]
       ],
       hint: 'Apply softmax function row-wise to the attention scores',
-      headNumber: 2,
-      headColor: HEAD_COLORS[2]
-    }
-  },
-
-  // Head 2 Output (Column 5)
-  {
-    id: 'calc-head2-output',
-    type: 'calculation',
-    position: getPosition(5, 0.5, LAYOUT.HEAD_VERTICAL_SPACING),
-    data: {
-      label: 'Head₂ Output',
-      formula: 'Head₂ = Attention₂ × V₂',
-      description: 'Final output for Head 2',
-      expectedMatrix: [
-        [0.2, 0.2, 0.2],
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1],
-        [0.2, 0.2, 0.2]
-      ],
-      hint: 'Multiply attention weights (5×5) with value matrix V₂ (5×3)',
       headNumber: 2,
       headColor: HEAD_COLORS[2]
     }
@@ -589,52 +545,12 @@ export const initialNodes: Node[] = [
     }
   },
 
-  // Head 3 Output (Column 5)
-  {
-    id: 'calc-head3-output',
-    type: 'calculation',
-    position: getPosition(5, 0.5, LAYOUT.HEAD_VERTICAL_SPACING * 2),
-    data: {
-      label: 'Head₃ Output',
-      formula: 'Head₃ = Attention₃ × V₃',
-      description: 'Final output for Head 3',
-      expectedMatrix: [
-        [0.2, 0.2, 0.2],
-        [0.2, 0.2, 0.2],
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1]
-      ],
-      hint: 'Multiply attention weights (5×5) with value matrix V₃ (5×3)',
-      headNumber: 3,
-      headColor: HEAD_COLORS[3]
-    }
-  },
-
-  // ====================== CONCATENATION AND FINAL LAYERS ======================
-  // Concatenated Matrix (Column 6, centered vertically)
-  {
-    id: 'concat-matrix',
-    type: 'matrix',
-    position: getPosition(6, 1, LAYOUT.HEAD_VERTICAL_SPACING),
-    data: {
-      label: 'Concatenated Matrix',
-      matrix: [
-        [1, 0, 0, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2],
-        [0, 1, 0, 1, 0, 0, 0.2, 0.2, 0.2],
-        [0, 0, 1, 0, 1, 0, 1, 0, 0],
-        [0.2, 0.2, 0.2, 0, 0, 1, 0, 1, 0],
-        [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 1]
-      ],
-      description: 'Concatenated outputs (5×9)'
-    }
-  },
-
-  // Output Weight Matrix (Column 7, centered vertically)
+  // ====================== FINAL LAYERS ======================
+  // Output Weight Matrix (Column 5, centered vertically)
   {
     id: 'wo-matrix',
     type: 'matrix',
-    position: getPosition(7, 1, LAYOUT.HEAD_VERTICAL_SPACING),
+    position: getPosition(5, 1, LAYOUT.HEAD_VERTICAL_SPACING),
     data: {
       label: 'Wo Matrix',
       matrix: [
@@ -652,11 +568,11 @@ export const initialNodes: Node[] = [
     }
   },
 
-  // Final Output Calculation (Column 8, centered vertically)
+  // Final Output Calculation (Column 6, centered vertically)
   {
     id: 'calc-output',
     type: 'calculation',
-    position: getPosition(8, 1, LAYOUT.HEAD_VERTICAL_SPACING),
+    position: getPosition(6, 1, LAYOUT.HEAD_VERTICAL_SPACING),
     data: {
       label: 'Final Output',
       formula: 'Output = Concat(Head₁, Head₂, Head₃) × Wo',
@@ -668,7 +584,7 @@ export const initialNodes: Node[] = [
         [0.2, 0.4, 0.2, 0.4, 0.4],
         [0.2, 0.4, 0.2, 0.4, 0.4]
       ],
-      hint: 'Multiply concatenated matrix (5×9) with Wo (9×5)'
+      hint: 'Concatenate all head outputs (5×9) then multiply by Wo (9×5)'
     }
   }
 ];
@@ -709,20 +625,11 @@ export const initialEdges: Edge[] = [
   { id: 'e-scores2-softmax2', source: 'calc-scores-head2', target: 'calc-softmax-head2' },
   { id: 'e-scores3-softmax3', source: 'calc-scores-head3', target: 'calc-softmax-head3' },
 
-  // Softmax and V to head outputs
-  { id: 'e-softmax1-head1output', source: 'calc-softmax-head1', target: 'calc-head1-output' },
-  { id: 'e-v1-head1output', source: 'calc-v-head1', target: 'calc-head1-output' },
-  { id: 'e-softmax2-head2output', source: 'calc-softmax-head2', target: 'calc-head2-output' },
-  { id: 'e-v2-head2output', source: 'calc-v-head2', target: 'calc-head2-output' },
-  { id: 'e-softmax3-head3output', source: 'calc-softmax-head3', target: 'calc-head3-output' },
-  { id: 'e-v3-head3output', source: 'calc-v-head3', target: 'calc-head3-output' },
-
-  // Head outputs to concatenated matrix
-  { id: 'e-head1-concat', source: 'calc-head1-output', target: 'concat-matrix' },
-  { id: 'e-head2-concat', source: 'calc-head2-output', target: 'concat-matrix' },
-  { id: 'e-head3-concat', source: 'calc-head3-output', target: 'concat-matrix' },
+  // All softmax to final output
+  { id: 'e-softmax1-output', source: 'calc-softmax-head1', target: 'calc-output' },
+  { id: 'e-softmax2-output', source: 'calc-softmax-head2', target: 'calc-output' },
+  { id: 'e-softmax3-output', source: 'calc-softmax-head3', target: 'calc-output' },
   
-  // Concatenated matrix and output weights to final calculation
-  { id: 'e-concat-output', source: 'concat-matrix', target: 'calc-output' },
+  // Output weights to final calculation
   { id: 'e-wo-output', source: 'wo-matrix', target: 'calc-output' }
 ];

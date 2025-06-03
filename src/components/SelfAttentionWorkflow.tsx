@@ -60,16 +60,10 @@ function WorkflowContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleT
           disabled = !completedNodeIds.has('calc-scores-head2');
         } else if (node.id === 'calc-softmax-head3') {
           disabled = !completedNodeIds.has('calc-scores-head3');
-        } else if (node.id === 'calc-head1-output') {
-          disabled = !(completedNodeIds.has('calc-softmax-head1') && completedNodeIds.has('calc-v-head1'));
-        } else if (node.id === 'calc-head2-output') {
-          disabled = !(completedNodeIds.has('calc-softmax-head2') && completedNodeIds.has('calc-v-head2'));
-        } else if (node.id === 'calc-head3-output') {
-          disabled = !(completedNodeIds.has('calc-softmax-head3') && completedNodeIds.has('calc-v-head3'));
         } else if (node.id === 'calc-output') {
-          disabled = !(completedNodeIds.has('calc-head1-output') && 
-                      completedNodeIds.has('calc-head2-output') && 
-                      completedNodeIds.has('calc-head3-output'));
+          disabled = !(completedNodeIds.has('calc-softmax-head1') && 
+                      completedNodeIds.has('calc-softmax-head2') && 
+                      completedNodeIds.has('calc-softmax-head3'));
         } else {
           disabled = true;
         }
