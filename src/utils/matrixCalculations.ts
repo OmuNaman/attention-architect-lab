@@ -1,60 +1,93 @@
+
 import type { Step } from '@/components/SelfAttentionApp';
 
-// New Matrix data
+// Multi-Head Attention Matrix data
 export const INPUT_MATRIX = [
-  [1, 0, 0, 0, 0, 0, 0, 0], // x1: "The"
-  [0, 1, 0, 0, 0, 0, 0, 0], // x2: "next"
-  [0, 0, 1, 0, 0, 0, 0, 0], // x3: "day"
-  [0, 0, 0, 1, 0, 0, 0, 0], // x4: "is"
-  [0, 0, 0, 0, 1, 0, 0, 0]  // x5: "bright"
+  [1, 0, 0, 0, 0], // x1: "The"
+  [0, 1, 0, 0, 0], // x2: "next"
+  [0, 0, 1, 0, 0], // x3: "day"
+  [0, 0, 0, 1, 0], // x4: "is"
+  [0, 0, 0, 0, 1]  // x5: "bright"
 ];
 
-export const WQ_MATRIX = [
-  [10, 0, 0, 0],
-  [10, 0, 0, 0],
-  [10, 0, 0, 0],
-  [0, 10, 0, 0],
-  [0, 10, 0, 0],
-  [0, 0, 0, 0],
-  [0, 0, 0, 0],
-  [0, 0, 0, 0]
+// Head 1 Matrices (3x5)
+export const WQ_MATRIX_HEAD1 = [
+  [1, 0, 0, 0, 0],
+  [0, 1, 0, 0, 0],
+  [0, 0, 1, 0, 0]
 ];
 
-export const WK_MATRIX = [
-  [2, 0, 0, 0],
-  [2, 0, 0, 0],
-  [2, 0, 0, 0],
-  [0, 2, 0, 0],
-  [0, 2, 0, 0],
-  [0, 0, 0, 0],
-  [0, 0, 0, 0],
-  [0, 0, 0, 0]
+export const WK_MATRIX_HEAD1 = [
+  [1, 0, 0, 0, 0],
+  [0, 1, 0, 0, 0],
+  [0, 0, 1, 0, 0]
 ];
 
-export const WV_MATRIX = [
-  [1, 0, 0, 0],
-  [0, 1, 0, 0],
-  [0, 0, 1, 0],
-  [0, 0, 0, 1],
-  [0, 0, 0, 1],
-  [0, 0, 0, 0],
-  [0, 0, 0, 0],
-  [0, 0, 0, 0]
+export const WV_MATRIX_HEAD1 = [
+  [1, 0, 0, 0, 0],
+  [0, 1, 0, 0, 0],
+  [0, 0, 1, 0, 0]
 ];
 
-// Scaling Factor (sqrt(d_k)) based on Key Matrix dimension 4
-const SCALING_FACTOR = 2.0;
+// Head 2 Matrices (3x5)
+export const WQ_MATRIX_HEAD2 = [
+  [0, 1, 0, 0, 0],
+  [0, 0, 1, 0, 0],
+  [0, 0, 0, 1, 0]
+];
+
+export const WK_MATRIX_HEAD2 = [
+  [0, 1, 0, 0, 0],
+  [0, 0, 1, 0, 0],
+  [0, 0, 0, 1, 0]
+];
+
+export const WV_MATRIX_HEAD2 = [
+  [0, 1, 0, 0, 0],
+  [0, 0, 1, 0, 0],
+  [0, 0, 0, 1, 0]
+];
+
+// Head 3 Matrices (3x5)
+export const WQ_MATRIX_HEAD3 = [
+  [0, 0, 1, 0, 0],
+  [0, 0, 0, 1, 0],
+  [0, 0, 0, 0, 1]
+];
+
+export const WK_MATRIX_HEAD3 = [
+  [0, 0, 1, 0, 0],
+  [0, 0, 0, 1, 0],
+  [0, 0, 0, 0, 1]
+];
+
+export const WV_MATRIX_HEAD3 = [
+  [0, 0, 1, 0, 0],
+  [0, 0, 0, 1, 0],
+  [0, 0, 0, 0, 1]
+];
+
+// Output Weight Matrix (5x9)
+export const WO_MATRIX = [
+  [1, 0, 0, 1, 0, 0, 1, 0, 0],
+  [0, 1, 0, 0, 1, 0, 0, 1, 0],
+  [0, 0, 1, 0, 0, 1, 0, 0, 1],
+  [1, 0, 0, 1, 0, 0, 1, 0, 0],
+  [0, 1, 0, 0, 1, 0, 0, 1, 0]
+];
+
+// Scaling Factor (sqrt(d_k)) based on Key Matrix dimension 3
+const SCALING_FACTOR = Math.sqrt(3);
 
 // Matrix multiplication helper
 function matrixMultiply(a: number[][], b: number[][]): number[][] {
   const resultRows = a.length;
   const resultCols = b[0].length;
-  const innerDim = b.length; // or a[0].length
+  const innerDim = b.length;
 
   if (a[0].length !== b.length) {
     console.error("Matrix dimensions incompatible for multiplication:", a[0].length, "vs", b.length);
-    // Return an empty matrix or throw an error, depending on desired error handling
-    return Array(resultRows).fill(null).map(() => Array(resultCols).fill(NaN)); 
+    return Array(resultRows).fill(null).map(() => Array(resultCols).fill(NaN));
   }
 
   const result = Array(resultRows).fill(null).map(() => Array(resultCols).fill(0));
@@ -73,56 +106,102 @@ function matrixMultiply(a: number[][], b: number[][]): number[][] {
 // Softmax function with numerical stability
 function softmax(matrix: number[][]): number[][] {
   return matrix.map(row => {
-    // Find the maximum value in the row for numerical stability
     const maxVal = Math.max(...row);
-    const expRow = row.map(x => Math.exp(x - maxVal)); // Subtract max for stability
+    const expRow = row.map(x => Math.exp(x - maxVal));
     const sum = expRow.reduce((acc, val) => acc + val, 0);
 
-    // Handle sum being zero to prevent NaN, e.g., if all inputs are -Infinity after maxVal subtraction
     if (sum === 0) {
-        return row.map(() => 0); // Or handle as an error condition
+        return row.map(() => 0);
     }
 
     return expRow.map(x => x / sum);
   });
 }
 
+// Concatenate matrices horizontally
+function concatenateHorizontally(matrices: number[][][]): number[][] {
+  const rows = matrices[0].length;
+  const result = Array(rows).fill(null).map(() => []);
+  
+  for (let i = 0; i < rows; i++) {
+    for (const matrix of matrices) {
+      result[i].push(...matrix[i]);
+    }
+  }
+  
+  return result;
+}
+
 // Calculate expected results for each step
-export function calculateExpected(step: Step): number[][] {
+export function calculateExpected(step: Step, headNumber?: number): number[][] {
   switch (step) {
     case 'input':
       return INPUT_MATRIX;
     case 'q':
-      return matrixMultiply(INPUT_MATRIX, WQ_MATRIX);
+      if (headNumber === 1) return matrixMultiply(INPUT_MATRIX, WQ_MATRIX_HEAD1.map((_, i) => WQ_MATRIX_HEAD1.map(row => row[i])));
+      if (headNumber === 2) return matrixMultiply(INPUT_MATRIX, WQ_MATRIX_HEAD2.map((_, i) => WQ_MATRIX_HEAD2.map(row => row[i])));
+      if (headNumber === 3) return matrixMultiply(INPUT_MATRIX, WQ_MATRIX_HEAD3.map((_, i) => WQ_MATRIX_HEAD3.map(row => row[i])));
+      return matrixMultiply(INPUT_MATRIX, WQ_MATRIX_HEAD1.map((_, i) => WQ_MATRIX_HEAD1.map(row => row[i])));
     case 'k':
-      return matrixMultiply(INPUT_MATRIX, WK_MATRIX);
+      if (headNumber === 1) return matrixMultiply(INPUT_MATRIX, WK_MATRIX_HEAD1.map((_, i) => WK_MATRIX_HEAD1.map(row => row[i])));
+      if (headNumber === 2) return matrixMultiply(INPUT_MATRIX, WK_MATRIX_HEAD2.map((_, i) => WK_MATRIX_HEAD2.map(row => row[i])));
+      if (headNumber === 3) return matrixMultiply(INPUT_MATRIX, WK_MATRIX_HEAD3.map((_, i) => WK_MATRIX_HEAD3.map(row => row[i])));
+      return matrixMultiply(INPUT_MATRIX, WK_MATRIX_HEAD1.map((_, i) => WK_MATRIX_HEAD1.map(row => row[i])));
     case 'v':
-      return matrixMultiply(INPUT_MATRIX, WV_MATRIX);
+      if (headNumber === 1) return matrixMultiply(INPUT_MATRIX, WV_MATRIX_HEAD1.map((_, i) => WV_MATRIX_HEAD1.map(row => row[i])));
+      if (headNumber === 2) return matrixMultiply(INPUT_MATRIX, WV_MATRIX_HEAD2.map((_, i) => WV_MATRIX_HEAD2.map(row => row[i])));
+      if (headNumber === 3) return matrixMultiply(INPUT_MATRIX, WV_MATRIX_HEAD3.map((_, i) => WV_MATRIX_HEAD3.map(row => row[i])));
+      return matrixMultiply(INPUT_MATRIX, WV_MATRIX_HEAD1.map((_, i) => WV_MATRIX_HEAD1.map(row => row[i])));
     case 'scores': {
-      const Q = matrixMultiply(INPUT_MATRIX, WQ_MATRIX);
-      const K = matrixMultiply(INPUT_MATRIX, WK_MATRIX);
-      const KT = K[0].map((_, i) => K.map(row => row[i])); // Transpose K
+      const headMatrices = [WQ_MATRIX_HEAD1, WQ_MATRIX_HEAD2, WQ_MATRIX_HEAD3];
+      const kHeadMatrices = [WK_MATRIX_HEAD1, WK_MATRIX_HEAD2, WK_MATRIX_HEAD3];
+      const targetHead = headNumber || 1;
+      
+      const Q = matrixMultiply(INPUT_MATRIX, headMatrices[targetHead - 1].map((_, i) => headMatrices[targetHead - 1].map(row => row[i])));
+      const K = matrixMultiply(INPUT_MATRIX, kHeadMatrices[targetHead - 1].map((_, i) => kHeadMatrices[targetHead - 1].map(row => row[i])));
+      const KT = K[0].map((_, i) => K.map(row => row[i]));
       const rawScores = matrixMultiply(Q, KT);
-      // Apply scaling factor here
       return rawScores.map(row => row.map(val => val / SCALING_FACTOR));
     }
     case 'softmax': {
-      const Q = matrixMultiply(INPUT_MATRIX, WQ_MATRIX);
-      const K = matrixMultiply(INPUT_MATRIX, WK_MATRIX);
-      const KT = K[0].map((_, i) => K.map(row => row[i])); // Transpose K
+      const headMatrices = [WQ_MATRIX_HEAD1, WQ_MATRIX_HEAD2, WQ_MATRIX_HEAD3];
+      const kHeadMatrices = [WK_MATRIX_HEAD1, WK_MATRIX_HEAD2, WK_MATRIX_HEAD3];
+      const targetHead = headNumber || 1;
+      
+      const Q = matrixMultiply(INPUT_MATRIX, headMatrices[targetHead - 1].map((_, i) => headMatrices[targetHead - 1].map(row => row[i])));
+      const K = matrixMultiply(INPUT_MATRIX, kHeadMatrices[targetHead - 1].map((_, i) => kHeadMatrices[targetHead - 1].map(row => row[i])));
+      const KT = K[0].map((_, i) => K.map(row => row[i]));
       const rawScores = matrixMultiply(Q, KT);
       const scaledScores = rawScores.map(row => row.map(val => val / SCALING_FACTOR));
       return softmax(scaledScores);
     }
     case 'output': {
-      const Q = matrixMultiply(INPUT_MATRIX, WQ_MATRIX);
-      const K = matrixMultiply(INPUT_MATRIX, WK_MATRIX);
-      const KT = K[0].map((_, i) => K.map(row => row[i])); // Transpose K
-      const rawScores = matrixMultiply(Q, KT);
-      const scaledScores = rawScores.map(row => row.map(val => val / SCALING_FACTOR));
-      const attention = softmax(scaledScores);
-      const V = matrixMultiply(INPUT_MATRIX, WV_MATRIX);
-      return matrixMultiply(attention, V);
+      // Calculate attention outputs for all heads
+      const allHeadOutputs = [];
+      
+      for (let head = 1; head <= 3; head++) {
+        const headMatrices = [WQ_MATRIX_HEAD1, WQ_MATRIX_HEAD2, WQ_MATRIX_HEAD3];
+        const kHeadMatrices = [WK_MATRIX_HEAD1, WK_MATRIX_HEAD2, WK_MATRIX_HEAD3];
+        const vHeadMatrices = [WV_MATRIX_HEAD1, WV_MATRIX_HEAD2, WV_MATRIX_HEAD3];
+        
+        const Q = matrixMultiply(INPUT_MATRIX, headMatrices[head - 1].map((_, i) => headMatrices[head - 1].map(row => row[i])));
+        const K = matrixMultiply(INPUT_MATRIX, kHeadMatrices[head - 1].map((_, i) => kHeadMatrices[head - 1].map(row => row[i])));
+        const V = matrixMultiply(INPUT_MATRIX, vHeadMatrices[head - 1].map((_, i) => vHeadMatrices[head - 1].map(row => row[i])));
+        
+        const KT = K[0].map((_, i) => K.map(row => row[i]));
+        const rawScores = matrixMultiply(Q, KT);
+        const scaledScores = rawScores.map(row => row.map(val => val / SCALING_FACTOR));
+        const attention = softmax(scaledScores);
+        const headOutput = matrixMultiply(attention, V);
+        
+        allHeadOutputs.push(headOutput);
+      }
+      
+      // Concatenate all head outputs
+      const concatenated = concatenateHorizontally(allHeadOutputs);
+      
+      // Multiply by output weight matrix
+      return matrixMultiply(concatenated, WO_MATRIX);
     }
     default:
       return [];
@@ -130,9 +209,9 @@ export function calculateExpected(step: Step): number[][] {
 }
 
 // Validate user input against expected result
-export function validateMatrix(step: Step, userMatrix: number[][]): { isValid: boolean; errors: boolean[][] } {
-  const expected = calculateExpected(step);
-  // Ensure user matrix has same dimensions as expected, otherwise it's invalid
+export function validateMatrix(step: Step, userMatrix: number[][], headNumber?: number): { isValid: boolean; errors: boolean[][] } {
+  const expected = calculateExpected(step, headNumber);
+  
   if (!userMatrix || userMatrix.length === 0 || !userMatrix[0] || userMatrix[0].length === 0 ||
       userMatrix.length !== expected.length || userMatrix[0].length !== expected[0].length) {
     return { isValid: false, errors: Array(expected.length).fill(null).map(() => Array(expected[0].length).fill(true)) };
@@ -145,7 +224,7 @@ export function validateMatrix(step: Step, userMatrix: number[][]): { isValid: b
     for (let j = 0; j < expected[i].length; j++) {
       const userValue = userMatrix[i]?.[j] || 0;
       const expectedValue = expected[i][j];
-      const tolerance = 0.0001; // Increased precision for floating point comparison
+      const tolerance = 0.0001;
       
       if (Math.abs(userValue - expectedValue) > tolerance) {
         errors[i][j] = true;
@@ -158,82 +237,90 @@ export function validateMatrix(step: Step, userMatrix: number[][]): { isValid: b
 }
 
 // Get step-specific data
-export function getStepData(step: Step) {
+export function getStepData(step: Step, headNumber?: number) {
+  const headSuffix = headNumber ? ` (Head ${headNumber})` : '';
+  
   const stepConfig = {
-    // ... (input, q, k, v, scores steps remain the same as your last provided version)
     input: {
       title: "Input Matrix",
-      description: "This is our starting input embeddings matrix (5×8)",
+      description: "Starting input embeddings matrix (5×5)",
       formula: "Input = X",
       resultName: "Input Matrix",
       inputMatrices: [],
-      hint: "This matrix is already given. Just observe the values from the original diagram."
+      hint: "This matrix is already given. Just observe the values."
     },
     q: {
-      title: "Query Matrix (Q)",
-      description: "Calculate the Query matrix by multiplying Input with Weight Query",
-      formula: "Q = Input × Wq",
-      resultName: "Q Matrix (5×4)",
+      title: `Query Matrix (Q)${headSuffix}`,
+      description: `Calculate the Query matrix for head ${headNumber || 1}`,
+      formula: `Q${headNumber || 1} = Input × Wq${headNumber || 1}`,
+      resultName: `Q Matrix (5×3)`,
       inputMatrices: [
-        { name: "Input (5×8)", data: INPUT_MATRIX },
-        { name: "Wq (8×4)", data: WQ_MATRIX }
+        { name: "Input (5×5)", data: INPUT_MATRIX },
+        { name: `Wq${headNumber || 1} (5×3)`, data: headNumber === 1 ? WQ_MATRIX_HEAD1.map((_, i) => WQ_MATRIX_HEAD1.map(row => row[i])) :
+                                                   headNumber === 2 ? WQ_MATRIX_HEAD2.map((_, i) => WQ_MATRIX_HEAD2.map(row => row[i])) :
+                                                   WQ_MATRIX_HEAD3.map((_, i) => WQ_MATRIX_HEAD3.map(row => row[i])) }
       ],
-      hint: "Multiply each row of Input (5×8) with each column of Wq (8×4). For Q₁₁ (first cell): (1×10) + (0×10) + (0×10) + (0×0) + (0×0) + (0×0) + (0×0) + (0×0) = 10"
+      hint: `Multiply Input matrix with weight matrix Wq${headNumber || 1} to get Query matrix for head ${headNumber || 1}.`
     },
     k: {
-      title: "Key Matrix (K)",
-      description: "Calculate the Key matrix by multiplying Input with Weight Key",
-      formula: "K = Input × Wk",
-      resultName: "K Matrix (5×4)",
+      title: `Key Matrix (K)${headSuffix}`,
+      description: `Calculate the Key matrix for head ${headNumber || 1}`,
+      formula: `K${headNumber || 1} = Input × Wk${headNumber || 1}`,
+      resultName: `K Matrix (5×3)`,
       inputMatrices: [
-        { name: "Input (5×8)", data: INPUT_MATRIX },
-        { name: "Wk (8×4)", data: WK_MATRIX }
+        { name: "Input (5×5)", data: INPUT_MATRIX },
+        { name: `Wk${headNumber || 1} (5×3)`, data: headNumber === 1 ? WK_MATRIX_HEAD1.map((_, i) => WK_MATRIX_HEAD1.map(row => row[i])) :
+                                                   headNumber === 2 ? WK_MATRIX_HEAD2.map((_, i) => WK_MATRIX_HEAD2.map(row => row[i])) :
+                                                   WK_MATRIX_HEAD3.map((_, i) => WK_MATRIX_HEAD3.map(row => row[i])) }
       ],
-      hint: "Similar to Q calculation, but using Wk weights. For K₁₁ (first cell): (1×2) + (0×2) + (0×2) + (0×0) + (0×0) + (0×0) + (0×0) + (0×0) = 2"
+      hint: `Multiply Input matrix with weight matrix Wk${headNumber || 1} to get Key matrix for head ${headNumber || 1}.`
     },
     v: {
-      title: "Value Matrix (V)",
-      description: "Calculate the Value matrix by multiplying Input with Weight Value",
-      formula: "V = Input × Wv",
-      resultName: "V Matrix (5×4)",
+      title: `Value Matrix (V)${headSuffix}`,
+      description: `Calculate the Value matrix for head ${headNumber || 1}`,
+      formula: `V${headNumber || 1} = Input × Wv${headNumber || 1}`,
+      resultName: `V Matrix (5×3)`,
       inputMatrices: [
-        { name: "Input (5×8)", data: INPUT_MATRIX },
-        { name: "Wv (8×4)", data: WV_MATRIX }
+        { name: "Input (5×5)", data: INPUT_MATRIX },
+        { name: `Wv${headNumber || 1} (5×3)`, data: headNumber === 1 ? WV_MATRIX_HEAD1.map((_, i) => WV_MATRIX_HEAD1.map(row => row[i])) :
+                                                   headNumber === 2 ? WV_MATRIX_HEAD2.map((_, i) => WV_MATRIX_HEAD2.map(row => row[i])) :
+                                                   WV_MATRIX_HEAD3.map((_, i) => WV_MATRIX_HEAD3.map(row => row[i])) }
       ],
-      hint: "Use Wv weights for this calculation. For V₁₁ (first cell): (1×1) + (0×0) + (0×0) + (0×0) + (0×0) + (0×0) + (0×0) + (0×0) = 1"
+      hint: `Multiply Input matrix with weight matrix Wv${headNumber || 1} to get Value matrix for head ${headNumber || 1}.`
     },
     scores: {
-      title: "Attention Scores (Scaled)",
-      description: `Calculate raw attention scores (Q × K^T), then divide each value by the scaling factor (√d_k = 2.0).`,
-      formula: `Scores = (Q × K^T) / 2.0`,
-      resultName: "Scaled Scores Matrix (5×5)",
+      title: `Attention Scores${headSuffix}`,
+      description: `Calculate scaled attention scores for head ${headNumber || 1}`,
+      formula: `Scores${headNumber || 1} = (Q${headNumber || 1} × K${headNumber || 1}^T) / √3`,
+      resultName: `Scaled Scores Matrix (5×5)`,
       inputMatrices: [
-        { name: "Q (5×4)", data: calculateExpected('q') },
-        { name: "K (5×4)", data: calculateExpected('k') }
+        { name: `Q${headNumber || 1} (5×3)`, data: calculateExpected('q', headNumber) },
+        { name: `K${headNumber || 1} (5×3)`, data: calculateExpected('k', headNumber) }
       ],
-      hint: `First transpose K (K^T will be 4×5), then multiply Q (5×4) with K^T (4×5) to get raw scores (5×5). Finally, divide each value in the raw scores matrix by 2.0. Example: A raw score of 20 becomes 20 / 2.0 = 10.`
+      hint: `Calculate attention scores by multiplying Q${headNumber || 1} with transposed K${headNumber || 1}, then divide by √3.`
     },
     softmax: {
-      title: "Softmax Attention",
-      description: "Apply the softmax function to convert the scaled attention scores into probabilities. This normalizes each row to sum to 1.",
-      formula: "Attention = softmax(Scaled Scores)",
-      resultName: "Attention Matrix (5×5)",
+      title: `Softmax Attention${headSuffix}`,
+      description: `Apply softmax to attention scores for head ${headNumber || 1}`,
+      formula: `Attention${headNumber || 1} = softmax(Scores${headNumber || 1})`,
+      resultName: `Attention Matrix (5×5)`,
       inputMatrices: [
-        { name: `Scaled Scores (5×5)`, data: calculateExpected('scores') }
+        { name: `Scores${headNumber || 1} (5×5)`, data: calculateExpected('scores', headNumber) }
       ],
-      // Updated Hint for softmax
-      hint: "For each row in Scaled Scores, apply softmax: exp(value) / sum(exp(all values in row)). Enter decimal values. For 1/3, enter approx. 0.3333. For 1/2, enter 0.5000. For very small numbers resulting from exp(0) when others are exp(10), an entry like 0.0000 is appropriate. The system will validate with a small tolerance."
+      hint: `Apply softmax function row-wise to the scaled scores matrix for head ${headNumber || 1}.`
     },
     output: {
-      title: "Final Output",
-      description: "Calculate the final output by multiplying the Attention weights with the Value matrix. This creates a weighted sum of Value vectors.",
-      formula: "Output = Attention × V",
-      resultName: "Output Matrix (5×4)",
+      title: "Multi-Head Output",
+      description: "Concatenate all head outputs and multiply by output weights",
+      formula: "Output = Concat(Head1, Head2, Head3) × Wo",
+      resultName: "Final Output Matrix (5×5)",
       inputMatrices: [
-        { name: "Attention (5×5)", data: calculateExpected('softmax') },
-        { name: "V (5×4)", data: calculateExpected('v') }
+        { name: "Head1 Output (5×3)", data: calculateExpected('softmax', 1) },
+        { name: "Head2 Output (5×3)", data: calculateExpected('softmax', 2) },
+        { name: "Head3 Output (5×3)", data: calculateExpected('softmax', 3) },
+        { name: "Wo (9×5)", data: WO_MATRIX }
       ],
-      hint: "Multiply the Attention matrix (5×5) with the Value matrix (5×4). Each row in the Output matrix is a weighted sum of the rows in the Value matrix, where the weights come from the corresponding row in the Attention matrix. Example Output₁₁: (0.3333 × V₁₁) + (0.3333 × V₂₁) + ... + (0.0000 × V₅₁)."
+      hint: "Concatenate outputs from all 3 heads horizontally to get a 5×9 matrix, then multiply by Wo (9×5) to get final 5×5 output."
     }
   };
   

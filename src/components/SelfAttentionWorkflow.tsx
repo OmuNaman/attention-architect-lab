@@ -38,27 +38,36 @@ function WorkflowContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleT
     return rawInitialNodes.map(node => {
       if (node.type === 'calculation') {
         let disabled = false;
-        switch (node.id) {
-          case 'calc-q':
-          case 'calc-k':
-          case 'calc-v':
-            disabled = false;
-            break;
-          case 'calc-kt':
-            disabled = !completedNodeIds.has('calc-k');
-            break;
-          case 'calc-scores':
-            disabled = !(completedNodeIds.has('calc-q') && completedNodeIds.has('calc-kt'));
-            break;
-          case 'calc-softmax':
-            disabled = !completedNodeIds.has('calc-scores');
-            break;
-          case 'calc-output':
-            disabled = !(completedNodeIds.has('calc-softmax') && completedNodeIds.has('calc-v'));
-            break;
-          default:
-            disabled = true;
+        
+        // Enable first step calculations for each head
+        const enabledNodes = [
+          'calc-q-head1', 'calc-k-head1', 'calc-v-head1',
+          'calc-q-head2', 'calc-k-head2', 'calc-v-head2', 
+          'calc-q-head3', 'calc-k-head3', 'calc-v-head3'
+        ];
+        
+        if (enabledNodes.includes(node.id)) {
+          disabled = false;
+        } else if (node.id === 'calc-scores-head1') {
+          disabled = !(completedNodeIds.has('calc-q-head1') && completedNodeIds.has('calc-k-head1'));
+        } else if (node.id === 'calc-scores-head2') {
+          disabled = !(completedNodeIds.has('calc-q-head2') && completedNodeIds.has('calc-k-head2'));
+        } else if (node.id === 'calc-scores-head3') {
+          disabled = !(completedNodeIds.has('calc-q-head3') && completedNodeIds.has('calc-k-head3'));
+        } else if (node.id === 'calc-softmax-head1') {
+          disabled = !completedNodeIds.has('calc-scores-head1');
+        } else if (node.id === 'calc-softmax-head2') {
+          disabled = !completedNodeIds.has('calc-scores-head2');
+        } else if (node.id === 'calc-softmax-head3') {
+          disabled = !completedNodeIds.has('calc-scores-head3');
+        } else if (node.id === 'calc-output') {
+          disabled = !(completedNodeIds.has('calc-softmax-head1') && 
+                      completedNodeIds.has('calc-softmax-head2') && 
+                      completedNodeIds.has('calc-softmax-head3'));
+        } else {
+          disabled = true;
         }
+        
         return {
           ...node,
           data: {
@@ -113,7 +122,7 @@ function WorkflowContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleT
             className="h-8"
           />
           <h1 className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-            Self Attention Mechanism from Scratch
+            Multi-Head Attention Mechanism (3 Heads)
           </h1>
         </div>
         <div className="flex items-center gap-4">

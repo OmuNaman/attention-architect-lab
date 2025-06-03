@@ -1,11 +1,11 @@
-// FILE: src/components/workflow/CalculationNode.tsx
+
 import { useState, useEffect, useRef } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { MatrixInput } from '@/components/MatrixInput';
 import { useTheme } from '@/components/ThemeProvider';
-import { CheckCircle, Calculator, Lightbulb, Lock, Unlock, CheckCircle2 } from 'lucide-react'; // Added CheckCircle2
+import { CheckCircle, Calculator, Lightbulb, Unlock, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface CalculationNodeProps {
@@ -16,7 +16,13 @@ interface CalculationNodeProps {
     expectedMatrix: number[][];
     hint: string;
     onComplete?: (nodeId: string) => void;
-    disabled?: boolean; // New prop
+    disabled?: boolean;
+    headNumber?: number;
+    headColor?: {
+      primary: string;
+      secondary: string;
+      border: string;
+    };
   };
   id: string;
 }
@@ -33,26 +39,21 @@ export function CalculationNode({ data, id }: CalculationNodeProps) {
   const [errors, setErrors] = useState<boolean[][]>([]);
 
   useEffect(() => {
-    // Reset internal state when the node is re-enabled (e.g., after a workflow reset)
-    // or if its expected matrix changes (though less likely here)
     if (!data.disabled) {
         setUserMatrix(initialMatrix());
-        setIsCompleted(false); // Reset completion status if it becomes enabled again
+        setIsCompleted(false);
         setErrors([]);
         setShowHint(false);
     }
-  }, [data.disabled, data.expectedMatrix]); // Rerun if disabled status changes
+  }, [data.disabled, data.expectedMatrix]);
 
-  // Create refs for audio objects to persist across renders
   const correctAudioRef = useRef<HTMLAudioElement | null>(null);
   const wrongAudioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Initialize audio elements only once when component mounts
   useEffect(() => {
     correctAudioRef.current = new Audio('/correct.mp3');
     wrongAudioRef.current = new Audio('/wrong.mp3');
     
-    // Preload audio files
     if (correctAudioRef.current) {
       correctAudioRef.current.load();
     }
@@ -60,7 +61,6 @@ export function CalculationNode({ data, id }: CalculationNodeProps) {
       wrongAudioRef.current.load();
     }
 
-    // Cleanup function to release audio resources
     return () => {
       if (correctAudioRef.current) {
         correctAudioRef.current.pause();
@@ -101,7 +101,6 @@ export function CalculationNode({ data, id }: CalculationNodeProps) {
     const allValid = newErrors.every(row => row.every(cellError => !cellError));
     setErrors(newErrors);
     
-    // Update state without playing sound (sound already played on button click)
     if (allValid) {
       setIsCompleted(true);
       data.onComplete?.(id);
@@ -113,35 +112,74 @@ export function CalculationNode({ data, id }: CalculationNodeProps) {
   const handleMatrixChange = (newMatrix: number[][]) => {
     if (data.disabled || isCompleted) return;
     setUserMatrix(newMatrix);
-    // Remove this line to prevent auto-validation
-    // validateMatrix(newMatrix); // Validate on change after blur
   };
 
   const resetMatrix = () => {
-    if (data.disabled || isCompleted) return; // Don't reset if node is locked or already done
+    if (data.disabled || isCompleted) return;
     setUserMatrix(initialMatrix());
-    // setIsCompleted(false); // Do not reset isCompleted on manual reset if we want it to stay green
     setErrors([]);
   };
 
-  // Remove the nodeIsEffectivelyReadonly calculation that includes isCompleted
-  const nodeIsEffectivelyReadonly = data.disabled; // Only lock if disabled, not if completed
+  const nodeIsEffectivelyReadonly = data.disabled;
+
+  // Apply head-specific styling
+  const getHeadStyles = () => {
+    if (!data.headNumber || !data.headColor) {
+      return {
+        borderColor: isCompleted ? (isDark ? '#10b981' : '#059669') : (isDark ? '#475569' : '#e2e8f0'),
+        backgroundColor: isDark ? '#1e293b' : '#ffffff',
+        shadowColor: isCompleted ? 'rgba(16, 185, 129, 0.3)' : 'rgba(0, 0, 0, 0.1)'
+      };
+    }
+
+    return {
+      borderColor: isCompleted ? '#10b981' : data.headColor.border,
+      backgroundColor: isDark ? `${data.headColor.primary}10` : data.headColor.secondary,
+      shadowColor: isCompleted ? 'rgba(16, 185, 129, 0.3)' : `${data.headColor.primary}40`
+    };
+  };
+
+  const headStyles = getHeadStyles();
 
   return (
-    <Card className={`min-w-[320px] max-w-[400px] transition-all duration-300 relative ${ // Added relative for overlay
-      isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-300'
-    } shadow-xl rounded-lg ${
-      isCompleted ? (isDark ? 'ring-2 ring-green-500/70' : 'ring-2 ring-green-500/80') 
-                  : (data.disabled ? (isDark ? 'border-slate-600' : 'border-slate-200') : '') // More subtle border for disabled
-    } ${data.disabled ? 'opacity-70' : ''}`}> {/* Dim disabled nodes */}
-      
+    <Card 
+      className="min-w-[320px] max-w-[400px] transition-all duration-300 relative shadow-xl rounded-lg overflow-hidden"
+      style={{
+        borderColor: headStyles.borderColor,
+        backgroundColor: headStyles.backgroundColor,
+        borderWidth: data.headNumber ? '3px' : isCompleted ? '2px' : '1px',
+        borderStyle: 'solid',
+        boxShadow: `0 10px 25px ${headStyles.shadowColor}, 0 4px 10px ${headStyles.shadowColor}`,
+        opacity: data.disabled ? 0.7 : 1
+      }}
+    >
+      {/* Head indicator stripe */}
+      {data.headNumber && (
+        <div 
+          className="absolute top-0 left-0 right-0 h-1"
+          style={{ backgroundColor: isCompleted ? '#10b981' : data.headColor?.primary }}
+        />
+      )}
 
-      <div className={`p-4 ${data.disabled ? 'pointer-events-none' : ''}`}> {/* Disable pointer events on content when node is disabled */}
+      <div className={`p-4 ${data.disabled ? 'pointer-events-none' : ''}`}>
         <div className="text-center mb-4">
           <div className="flex items-center justify-center gap-2 mb-2">
+            {data.headNumber && (
+              <div 
+                className="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                style={{ backgroundColor: isCompleted ? '#10b981' : data.headColor?.primary }}
+              >
+                {data.headNumber}
+              </div>
+            )}
             {isCompleted ? <Unlock className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-500'}`} /> 
-                         : <Calculator className={`w-5 h-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />}
-            <h3 className={`font-semibold text-lg ${isDark ? 'text-slate-100' : 'text-slate-800'}`}>{data.label}</h3>
+                         : <Calculator className={`w-5 h-5`} style={{ color: data.headColor?.primary || (isDark ? '#a855f7' : '#7c3aed') }} />}
+            <h3 
+              className={`font-semibold text-lg ${isDark ? 'text-slate-100' : 'text-slate-800'}`}
+              style={data.headNumber && !isCompleted ? { color: data.headColor?.primary } : {}}
+            >
+              {data.label}
+            </h3>
             {isCompleted && !data.disabled && (
               <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} >
                 <CheckCircle className={`w-5 h-5 ${isDark ? 'text-green-400' : 'text-green-500'}`} />
@@ -155,16 +193,26 @@ export function CalculationNode({ data, id }: CalculationNodeProps) {
           </p>
         </div>
 
-        <div className={`mb-4 p-3 border rounded-md text-center transition-colors duration-300 ${
-          isDark 
-          ? 'bg-gradient-to-r from-blue-900/20 to-purple-900/20 border-slate-700' 
-          : 'bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-slate-200'
-        }`}>
-          <div className={`text-lg font-mono ${isDark ? 'text-blue-300' : 'text-indigo-600'}`}>{data.formula}</div>
+        <div className={`mb-4 p-3 border rounded-md text-center transition-colors duration-300`}
+          style={{
+            background: data.headNumber 
+              ? `linear-gradient(135deg, ${data.headColor?.secondary || '#f8fafc'}, ${isDark ? '#1e293b' : '#ffffff'})`
+              : isDark 
+                ? 'linear-gradient(to right, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))'
+                : 'linear-gradient(to right, rgb(239, 246, 255), rgb(238, 242, 255))',
+            borderColor: data.headColor?.border || (isDark ? '#475569' : '#e2e8f0')
+          }}
+        >
+          <div 
+            className="text-lg font-mono"
+            style={{ color: data.headColor?.primary || (isDark ? '#60a5fa' : '#3730a3') }}
+          >
+            {data.formula}
+          </div>
         </div>
 
         <div className="flex items-center justify-between mb-4 gap-2">
-          <div className="flex items-center gap-2"> {/* Added container for left-side buttons */}
+          <div className="flex items-center gap-2">
             <Button
               onClick={() => setShowHint(!showHint)}
               variant="outline"
@@ -192,12 +240,9 @@ export function CalculationNode({ data, id }: CalculationNodeProps) {
             </Button>
           </div>
 
-          {/* Add new Verify button */}
           <Button
             onClick={() => {
-              // First validate the matrix
               const validationResult = validateMatrix(userMatrix);
-              // Then play the appropriate sound based on validation result
               playSound(validationResult);
             }}
             variant="outline"
@@ -214,7 +259,7 @@ export function CalculationNode({ data, id }: CalculationNodeProps) {
           </Button>
         </div>
 
-        {showHint && !data.disabled && ( // Only show hint if not disabled
+        {showHint && !data.disabled && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
@@ -234,7 +279,7 @@ export function CalculationNode({ data, id }: CalculationNodeProps) {
             onChange={handleMatrixChange}
             errors={errors}
             readonly={data.disabled}
-            isCompleted={isCompleted} // This prop will trigger green styling
+            isCompleted={isCompleted}
           />
         </div>
 
@@ -252,13 +297,21 @@ export function CalculationNode({ data, id }: CalculationNodeProps) {
       <Handle
         type="target"
         position={Position.Left}
-        className={`w-3 h-3 !border-2 rounded-full transition-colors duration-300 ${isDark ? '!bg-blue-500 !border-slate-800' : '!bg-blue-500 !border-white'}`}
+        className="w-3 h-3 !border-2 rounded-full transition-colors duration-300"
+        style={{
+          backgroundColor: data.headColor?.primary || (isDark ? '#3b82f6' : '#3b82f6'),
+          borderColor: isDark ? '#1e293b' : '#ffffff'
+        }}
       />
       
       <Handle
         type="source"
         position={Position.Right}
-        className={`w-3 h-3 !border-2 rounded-full transition-colors duration-300 ${isDark ? '!bg-purple-500 !border-slate-800' : '!bg-purple-500 !border-white'}`}
+        className="w-3 h-3 !border-2 rounded-full transition-colors duration-300"
+        style={{
+          backgroundColor: data.headColor?.primary || (isDark ? '#8b5cf6' : '#8b5cf6'),
+          borderColor: isDark ? '#1e293b' : '#ffffff'
+        }}
       />
     </Card>
   );

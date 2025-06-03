@@ -1,200 +1,456 @@
-// FILE: src/utils/workflowData.ts
+
 import { Node, Edge } from '@xyflow/react';
 import { 
   INPUT_MATRIX, 
-  WQ_MATRIX, 
-  WK_MATRIX, 
-  WV_MATRIX, 
+  WQ_MATRIX_HEAD1, WQ_MATRIX_HEAD2, WQ_MATRIX_HEAD3,
+  WK_MATRIX_HEAD1, WK_MATRIX_HEAD2, WK_MATRIX_HEAD3,
+  WV_MATRIX_HEAD1, WV_MATRIX_HEAD2, WV_MATRIX_HEAD3,
+  WO_MATRIX,
   calculateExpected 
 } from '@/utils/matrixCalculations';
 
-// Approximate heights based on new matrix sizes and content
-// These are for planning, the actual render will determine exact size.
-// We'll use these to guide the y-coordinate settings.
-const NODE_VERTICAL_GAP = 150; // Increased gap
+const NODE_VERTICAL_GAP = 200;
+const NODE_HORIZONTAL_GAP = 600;
 
-// Estimated heights for planning node positions
-// MatrixNode with 5 rows (like Input): ~280-320px
-// MatrixNode with 8 rows (like Wq, Wk, Wv): ~400-450px
-// CalculationNode with 5-row output (like Q, K, V, Scores, Softmax, Output): ~450-500px
-// CalculationNode with 4-row output (like K^T): ~420-470px
+// Head colors for creative differentiation
+const HEAD_COLORS = {
+  1: { primary: '#FF6B6B', secondary: '#FFE0E0', border: '#FF4444' }, // Red theme
+  2: { primary: '#4ECDC4', secondary: '#E0F7F5', border: '#2EBCB3' }, // Teal theme  
+  3: { primary: '#45B7D1', secondary: '#E0F3FA', border: '#2196F3' }  // Blue theme
+};
 
-let currentY_col1 = 50;
-const inputMatrixHeight = 300; // Estimate for Input Matrix (5 rows)
-const weightMatrixHeight = 420; // Estimate for Wq, Wk, Wv (8 rows)
-
-const calcNode5RowHeight = 480; // Estimate for Q, K, V, Scores, Softmax, Output
-const calcNode4RowHeight = 450; // Estimate for K^T
+let currentY = 50;
 
 export const initialNodes: Node[] = [
-  // --- Column 1: Inputs ---
+  // Input Matrix (shared across all heads)
   {
     id: 'input-matrix',
     type: 'matrix',
-    position: { x: 100, y: currentY_col1 },
+    position: { x: 100, y: currentY },
     data: {
       label: 'Input Matrix',
       matrix: INPUT_MATRIX,
-      description: 'Token embeddings (5×8)',
+      description: 'Token embeddings (5×5)',
       isInput: true,
     },
   },
+
+  // HEAD 1 - Red Theme
   {
-    id: 'wq-matrix',
+    id: 'wq-matrix-head1',
     type: 'matrix',
-    position: { x: 100, y: (currentY_col1 += inputMatrixHeight + NODE_VERTICAL_GAP) }, // 50 + 300 + 150 = 500
+    position: { x: 100, y: (currentY += 300) },
     data: {
-      label: 'Weight Query (Wq)',
-      matrix: WQ_MATRIX,
-      description: 'Query weight matrix (8×4)',
+      label: 'Wq₁ (Head 1)',
+      matrix: WQ_MATRIX_HEAD1.map((_, i) => WQ_MATRIX_HEAD1.map(row => row[i])),
+      description: 'Query weights Head 1 (5×3)',
       isInput: true,
+      headNumber: 1,
+      headColor: HEAD_COLORS[1],
     },
   },
   {
-    id: 'wk-matrix',
+    id: 'wk-matrix-head1',
     type: 'matrix',
-    position: { x: 100, y: (currentY_col1 += weightMatrixHeight + NODE_VERTICAL_GAP) }, // 500 + 420 + 150 = 1070
+    position: { x: 100, y: (currentY += 250) },
     data: {
-      label: 'Weight Key (Wk)',
-      matrix: WK_MATRIX,
-      description: 'Key weight matrix (8×4)',
+      label: 'Wk₁ (Head 1)',
+      matrix: WK_MATRIX_HEAD1.map((_, i) => WK_MATRIX_HEAD1.map(row => row[i])),
+      description: 'Key weights Head 1 (5×3)',
       isInput: true,
+      headNumber: 1,
+      headColor: HEAD_COLORS[1],
     },
   },
   {
-    id: 'wv-matrix',
+    id: 'wv-matrix-head1',
     type: 'matrix',
-    position: { x: 100, y: (currentY_col1 += weightMatrixHeight + NODE_VERTICAL_GAP) }, // 1070 + 420 + 150 = 1640
+    position: { x: 100, y: (currentY += 250) },
     data: {
-      label: 'Weight Value (Wv)',
-      matrix: WV_MATRIX,
-      description: 'Value weight matrix (8×4)',
+      label: 'Wv₁ (Head 1)',
+      matrix: WV_MATRIX_HEAD1.map((_, i) => WV_MATRIX_HEAD1.map(row => row[i])),
+      description: 'Value weights Head 1 (5×3)',
+      isInput: true,
+      headNumber: 1,
+      headColor: HEAD_COLORS[1],
+    },
+  },
+
+  // HEAD 2 - Teal Theme
+  {
+    id: 'wq-matrix-head2',
+    type: 'matrix',
+    position: { x: 100, y: (currentY += 350) },
+    data: {
+      label: 'Wq₂ (Head 2)',
+      matrix: WQ_MATRIX_HEAD2.map((_, i) => WQ_MATRIX_HEAD2.map(row => row[i])),
+      description: 'Query weights Head 2 (5×3)',
+      isInput: true,
+      headNumber: 2,
+      headColor: HEAD_COLORS[2],
+    },
+  },
+  {
+    id: 'wk-matrix-head2',
+    type: 'matrix',
+    position: { x: 100, y: (currentY += 250) },
+    data: {
+      label: 'Wk₂ (Head 2)',
+      matrix: WK_MATRIX_HEAD2.map((_, i) => WK_MATRIX_HEAD2.map(row => row[i])),
+      description: 'Key weights Head 2 (5×3)',
+      isInput: true,
+      headNumber: 2,
+      headColor: HEAD_COLORS[2],
+    },
+  },
+  {
+    id: 'wv-matrix-head2',
+    type: 'matrix',
+    position: { x: 100, y: (currentY += 250) },
+    data: {
+      label: 'Wv₂ (Head 2)',
+      matrix: WV_MATRIX_HEAD2.map((_, i) => WV_MATRIX_HEAD2.map(row => row[i])),
+      description: 'Value weights Head 2 (5×3)',
+      isInput: true,
+      headNumber: 2,
+      headColor: HEAD_COLORS[2],
+    },
+  },
+
+  // HEAD 3 - Blue Theme
+  {
+    id: 'wq-matrix-head3',
+    type: 'matrix',
+    position: { x: 100, y: (currentY += 350) },
+    data: {
+      label: 'Wq₃ (Head 3)',
+      matrix: WQ_MATRIX_HEAD3.map((_, i) => WQ_MATRIX_HEAD3.map(row => row[i])),
+      description: 'Query weights Head 3 (5×3)',
+      isInput: true,
+      headNumber: 3,
+      headColor: HEAD_COLORS[3],
+    },
+  },
+  {
+    id: 'wk-matrix-head3',
+    type: 'matrix',
+    position: { x: 100, y: (currentY += 250) },
+    data: {
+      label: 'Wk₃ (Head 3)',
+      matrix: WK_MATRIX_HEAD3.map((_, i) => WK_MATRIX_HEAD3.map(row => row[i])),
+      description: 'Key weights Head 3 (5×3)',
+      isInput: true,
+      headNumber: 3,
+      headColor: HEAD_COLORS[3],
+    },
+  },
+  {
+    id: 'wv-matrix-head3',
+    type: 'matrix',
+    position: { x: 100, y: (currentY += 250) },
+    data: {
+      label: 'Wv₃ (Head 3)',
+      matrix: WV_MATRIX_HEAD3.map((_, i) => WV_MATRIX_HEAD3.map(row => row[i])),
+      description: 'Value weights Head 3 (5×3)',
+      isInput: true,
+      headNumber: 3,
+      headColor: HEAD_COLORS[3],
+    },
+  },
+
+  // HEAD 1 CALCULATIONS - Red Theme
+  {
+    id: 'calc-q-head1',
+    type: 'calculation',
+    position: { x: 800, y: 400 },
+    data: {
+      label: 'Calculate Q₁',
+      formula: 'Q₁ = Input × Wq₁',
+      description: 'Query matrix Head 1 (5×3)',
+      expectedMatrix: calculateExpected('q', 1),
+      hint: 'Multiply Input with Wq₁ to get Query matrix for Head 1',
+      headNumber: 1,
+      headColor: HEAD_COLORS[1],
+    },
+  },
+  {
+    id: 'calc-k-head1',
+    type: 'calculation',
+    position: { x: 800, y: 700 },
+    data: {
+      label: 'Calculate K₁',
+      formula: 'K₁ = Input × Wk₁',
+      description: 'Key matrix Head 1 (5×3)',
+      expectedMatrix: calculateExpected('k', 1),
+      hint: 'Multiply Input with Wk₁ to get Key matrix for Head 1',
+      headNumber: 1,
+      headColor: HEAD_COLORS[1],
+    },
+  },
+  {
+    id: 'calc-v-head1',
+    type: 'calculation',
+    position: { x: 800, y: 1000 },
+    data: {
+      label: 'Calculate V₁',
+      formula: 'V₁ = Input × Wv₁',
+      description: 'Value matrix Head 1 (5×3)',
+      expectedMatrix: calculateExpected('v', 1),
+      hint: 'Multiply Input with Wv₁ to get Value matrix for Head 1',
+      headNumber: 1,
+      headColor: HEAD_COLORS[1],
+    },
+  },
+
+  // HEAD 2 CALCULATIONS - Teal Theme
+  {
+    id: 'calc-q-head2',
+    type: 'calculation',
+    position: { x: 800, y: 1350 },
+    data: {
+      label: 'Calculate Q₂',
+      formula: 'Q₂ = Input × Wq₂',
+      description: 'Query matrix Head 2 (5×3)',
+      expectedMatrix: calculateExpected('q', 2),
+      hint: 'Multiply Input with Wq₂ to get Query matrix for Head 2',
+      headNumber: 2,
+      headColor: HEAD_COLORS[2],
+    },
+  },
+  {
+    id: 'calc-k-head2',
+    type: 'calculation',
+    position: { x: 800, y: 1650 },
+    data: {
+      label: 'Calculate K₂',
+      formula: 'K₂ = Input × Wk₂',
+      description: 'Key matrix Head 2 (5×3)',
+      expectedMatrix: calculateExpected('k', 2),
+      hint: 'Multiply Input with Wk₂ to get Key matrix for Head 2',
+      headNumber: 2,
+      headColor: HEAD_COLORS[2],
+    },
+  },
+  {
+    id: 'calc-v-head2',
+    type: 'calculation',
+    position: { x: 800, y: 1950 },
+    data: {
+      label: 'Calculate V₂',
+      formula: 'V₂ = Input × Wv₂',
+      description: 'Value matrix Head 2 (5×3)',
+      expectedMatrix: calculateExpected('v', 2),
+      hint: 'Multiply Input with Wv₂ to get Value matrix for Head 2',
+      headNumber: 2,
+      headColor: HEAD_COLORS[2],
+    },
+  },
+
+  // HEAD 3 CALCULATIONS - Blue Theme
+  {
+    id: 'calc-q-head3',
+    type: 'calculation',
+    position: { x: 800, y: 2300 },
+    data: {
+      label: 'Calculate Q₃',
+      formula: 'Q₃ = Input × Wq₃',
+      description: 'Query matrix Head 3 (5×3)',
+      expectedMatrix: calculateExpected('q', 3),
+      hint: 'Multiply Input with Wq₃ to get Query matrix for Head 3',
+      headNumber: 3,
+      headColor: HEAD_COLORS[3],
+    },
+  },
+  {
+    id: 'calc-k-head3',
+    type: 'calculation',
+    position: { x: 800, y: 2600 },
+    data: {
+      label: 'Calculate K₃',
+      formula: 'K₃ = Input × Wk₃',
+      description: 'Key matrix Head 3 (5×3)',
+      expectedMatrix: calculateExpected('k', 3),
+      hint: 'Multiply Input with Wk₃ to get Key matrix for Head 3',
+      headNumber: 3,
+      headColor: HEAD_COLORS[3],
+    },
+  },
+  {
+    id: 'calc-v-head3',
+    type: 'calculation',
+    position: { x: 800, y: 2900 },
+    data: {
+      label: 'Calculate V₃',
+      formula: 'V₃ = Input × Wv₃',
+      description: 'Value matrix Head 3 (5×3)',
+      expectedMatrix: calculateExpected('v', 3),
+      hint: 'Multiply Input with Wv₃ to get Value matrix for Head 3',
+      headNumber: 3,
+      headColor: HEAD_COLORS[3],
+    },
+  },
+
+  // ATTENTION CALCULATIONS FOR EACH HEAD
+  {
+    id: 'calc-scores-head1',
+    type: 'calculation',
+    position: { x: 1400, y: 550 },
+    data: {
+      label: 'Scores₁',
+      formula: 'Scores₁ = (Q₁ × K₁ᵀ) / √3',
+      description: 'Attention scores Head 1 (5×5)',
+      expectedMatrix: calculateExpected('scores', 1),
+      hint: 'Calculate attention scores for Head 1',
+      headNumber: 1,
+      headColor: HEAD_COLORS[1],
+    },
+  },
+  {
+    id: 'calc-softmax-head1',
+    type: 'calculation',
+    position: { x: 2000, y: 550 },
+    data: {
+      label: 'Attention₁',
+      formula: 'Attention₁ = softmax(Scores₁)',
+      description: 'Softmax attention Head 1 (5×5)',
+      expectedMatrix: calculateExpected('softmax', 1),
+      hint: 'Apply softmax to scores for Head 1',
+      headNumber: 1,
+      headColor: HEAD_COLORS[1],
+    },
+  },
+
+  {
+    id: 'calc-scores-head2',
+    type: 'calculation',
+    position: { x: 1400, y: 1500 },
+    data: {
+      label: 'Scores₂',
+      formula: 'Scores₂ = (Q₂ × K₂ᵀ) / √3',
+      description: 'Attention scores Head 2 (5×5)',
+      expectedMatrix: calculateExpected('scores', 2),
+      hint: 'Calculate attention scores for Head 2',
+      headNumber: 2,
+      headColor: HEAD_COLORS[2],
+    },
+  },
+  {
+    id: 'calc-softmax-head2',
+    type: 'calculation',
+    position: { x: 2000, y: 1500 },
+    data: {
+      label: 'Attention₂',
+      formula: 'Attention₂ = softmax(Scores₂)',
+      description: 'Softmax attention Head 2 (5×5)',
+      expectedMatrix: calculateExpected('softmax', 2),
+      hint: 'Apply softmax to scores for Head 2',
+      headNumber: 2,
+      headColor: HEAD_COLORS[2],
+    },
+  },
+
+  {
+    id: 'calc-scores-head3',
+    type: 'calculation',
+    position: { x: 1400, y: 2450 },
+    data: {
+      label: 'Scores₃',
+      formula: 'Scores₃ = (Q₃ × K₃ᵀ) / √3',
+      description: 'Attention scores Head 3 (5×5)',
+      expectedMatrix: calculateExpected('scores', 3),
+      hint: 'Calculate attention scores for Head 3',
+      headNumber: 3,
+      headColor: HEAD_COLORS[3],
+    },
+  },
+  {
+    id: 'calc-softmax-head3',
+    type: 'calculation',
+    position: { x: 2000, y: 2450 },
+    data: {
+      label: 'Attention₃',
+      formula: 'Attention₃ = softmax(Scores₃)',
+      description: 'Softmax attention Head 3 (5×5)',
+      expectedMatrix: calculateExpected('softmax', 3),
+      hint: 'Apply softmax to scores for Head 3',
+      headNumber: 3,
+      headColor: HEAD_COLORS[3],
+    },
+  },
+
+  // OUTPUT WEIGHT MATRIX
+  {
+    id: 'wo-matrix',
+    type: 'matrix',
+    position: { x: 2600, y: 1400 },
+    data: {
+      label: 'Output Weights (Wo)',
+      matrix: WO_MATRIX,
+      description: 'Output projection weights (9×5)',
       isInput: true,
     },
   },
 
-  // --- Column 2: Q, K, V Calculations ---
-  // Position Q relative to its inputs (Input & Wq)
-  {
-    id: 'calc-q',
-    type: 'calculation',
-    position: { x: 1050, y: 250 }, // Adjusted to vertically center somewhat with Input and Wq
-    data: {
-      label: 'Calculate Q',
-      formula: 'Q = Input × Wq',
-      description: 'Query matrix calculation (5×4)',
-      expectedMatrix: calculateExpected('q'),
-      hint: 'Multiply each row of Input (5×8) with each column of Wq (8×4). For Q₁₁ (first cell): (1×10) + (0×10) + (0×10) + (0×0) + (0×0) + (0×0) + (0×0) + (0×0) = 10',
-    },
-  },
-  // Position K relative to its inputs (Input & Wk)
-  {
-    id: 'calc-k',
-    type: 'calculation',
-    position: { x: 650, y: 250 + calcNode5RowHeight + NODE_VERTICAL_GAP + 50 }, // 250 + 480 + 150 + 50 = 930
-    data: {
-      label: 'Calculate K',
-      formula: 'K = Input × Wk',
-      description: 'Key matrix calculation (5×4)',
-      expectedMatrix: calculateExpected('k'),
-      hint: 'Similar to Q calculation, but using Wk weights. For K₁₁ (first cell): (1×2) + (0×2) + (0×2) + (0×0) + (0×0) + (0×0) + (0×0) + (0×0) = 2',
-    },
-  },
-  // Position V relative to its inputs (Input & Wv)
-  {
-    id: 'calc-v',
-    type: 'calculation',
-    position: { x: 1550, y: 930 + calcNode5RowHeight + NODE_VERTICAL_GAP + 50 }, // 930 + 480 + 150 + 50 = 1610
-    data: {
-      label: 'Calculate V',
-      formula: 'V = Input × Wv',
-      description: 'Value matrix calculation (5×4)',
-      expectedMatrix: calculateExpected('v'),
-      hint: 'Use Wv weights for this calculation. For V₁₁ (first cell): (1×1) + (0×0) + (0×0) + (0×0) + (0×0) + (0×0) + (0×0) + (0×0) = 1',
-    },
-  },
-
-  // --- Column 3: K Transpose ---
-  {
-    id: 'calc-kt',
-    type: 'calculation',
-    position: { x: 1200, y: 930 }, // Align with calc-k
-    data: {
-      label: 'Transpose K',
-      formula: 'K^T = transpose(K)',
-      description: 'Transpose the Key matrix (4×5)',
-      expectedMatrix: calculateExpected('k')[0].map((_, i) => calculateExpected('k').map(row => row[i])),
-      hint: 'Flip rows and columns: K[i][j] becomes K^T[j][i]',
-    },
-  },
-
-  // --- Column 4: Attention Scores ---
-  // Position Scores relative to its inputs (Q & K^T)
-  {
-    id: 'calc-scores',
-    type: 'calculation',
-    position: { x: 1750, y: 590 }, // Vertically between Q (center ~490) and K^T (center ~1145)
-    data: {
-      label: 'Attention Scores (Scaled)',
-      formula: `Scores = (Q × K^T) / 2.0`,
-      description: 'Attention scores calculation (5×5)',
-      expectedMatrix: calculateExpected('scores'),
-      hint: 'Multiply Q matrix (5×4) with transposed K matrix (4×5) to get raw scores (5×5). Then, divide each value in the raw scores matrix by the scaling factor of 2.0 (√d_k).',
-    },
-  },
-
-  // --- Column 5: Softmax ---
-  {
-    id: 'calc-softmax',
-    type: 'calculation',
-    position: { x: 2300, y: 590 }, // Align with calc-scores
-    data: {
-      label: 'Apply Softmax',
-      formula: "Attention = softmax(Scaled Scores)",
-      description: 'Convert scaled scores to probabilities (5×5)',
-      expectedMatrix: calculateExpected('softmax'),
-      hint: 'For each row in the Scaled Scores matrix, apply the softmax formula: exp(value) / sum(exp(all values in row)). This normalizes each row to sum to 1. Due to the high scaled scores (10), values like exp(10) will dominate the sum, making other terms (exp(0)) effectively zero.',
-    },
-  },
-
-  // --- Column 6: Final Output ---
-  // Position Output relative to its inputs (Softmax & V)
+  // FINAL OUTPUT
   {
     id: 'calc-output',
     type: 'calculation',
-    position: { x: 2850, y: 1100 }, // Vertically between Softmax (center ~830) and V (center ~1850)
+    position: { x: 3200, y: 1500 },
     data: {
       label: 'Final Output',
-      formula: 'Output = Attention × V',
-      description: 'Weighted combination of values (5×4)',
+      formula: 'Output = Concat(Head₁,Head₂,Head₃) × Wo',
+      description: 'Multi-head attention output (5×5)',
       expectedMatrix: calculateExpected('output'),
-      hint: 'Multiply the Attention matrix (5×5) with the Value matrix (5×4). Each row in the Output matrix is a weighted sum of the rows in the Value matrix, where the weights come from the corresponding row in the Attention matrix.',
+      hint: 'Concatenate all head outputs and multiply by Wo',
     },
   },
 ];
 
 export const initialEdges: Edge[] = [
-  // Input to weight multiplications
-  { id: 'input-to-q', source: 'input-matrix', target: 'calc-q', animated: true, style: { strokeWidth: 1.5 } },
-  { id: 'wq-to-q', source: 'wq-matrix', target: 'calc-q', animated: true, style: { strokeWidth: 1.5 } },
+  // Input to all head calculations
+  { id: 'input-to-q1', source: 'input-matrix', target: 'calc-q-head1', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[1].primary } },
+  { id: 'input-to-k1', source: 'input-matrix', target: 'calc-k-head1', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[1].primary } },
+  { id: 'input-to-v1', source: 'input-matrix', target: 'calc-v-head1', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[1].primary } },
   
-  { id: 'input-to-k', source: 'input-matrix', target: 'calc-k', animated: true, style: { strokeWidth: 1.5 } },
-  { id: 'wk-to-k', source: 'wk-matrix', target: 'calc-k', animated: true, style: { strokeWidth: 1.5 } },
+  { id: 'input-to-q2', source: 'input-matrix', target: 'calc-q-head2', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[2].primary } },
+  { id: 'input-to-k2', source: 'input-matrix', target: 'calc-k-head2', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[2].primary } },
+  { id: 'input-to-v2', source: 'input-matrix', target: 'calc-v-head2', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[2].primary } },
   
-  { id: 'input-to-v', source: 'input-matrix', target: 'calc-v', animated: true, style: { strokeWidth: 1.5 } },
-  { id: 'wv-to-v', source: 'wv-matrix', target: 'calc-v', animated: true, style: { strokeWidth: 1.5 } },
+  { id: 'input-to-q3', source: 'input-matrix', target: 'calc-q-head3', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[3].primary } },
+  { id: 'input-to-k3', source: 'input-matrix', target: 'calc-k-head3', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[3].primary } },
+  { id: 'input-to-v3', source: 'input-matrix', target: 'calc-v-head3', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[3].primary } },
+
+  // Weight matrices to calculations
+  { id: 'wq1-to-q1', source: 'wq-matrix-head1', target: 'calc-q-head1', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[1].primary } },
+  { id: 'wk1-to-k1', source: 'wk-matrix-head1', target: 'calc-k-head1', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[1].primary } },
+  { id: 'wv1-to-v1', source: 'wv-matrix-head1', target: 'calc-v-head1', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[1].primary } },
   
-  // K to K transpose
-  { id: 'k-to-kt', source: 'calc-k', target: 'calc-kt', animated: true, style: { strokeWidth: 1.5 } },
+  { id: 'wq2-to-q2', source: 'wq-matrix-head2', target: 'calc-q-head2', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[2].primary } },
+  { id: 'wk2-to-k2', source: 'wk-matrix-head2', target: 'calc-k-head2', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[2].primary } },
+  { id: 'wv2-to-v2', source: 'wv-matrix-head2', target: 'calc-v-head2', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[2].primary } },
   
-  // Q and K^T to Scores
-  { id: 'q-to-scores', source: 'calc-q', target: 'calc-scores', animated: true, style: { strokeWidth: 1.5 } },
-  { id: 'kt-to-scores', source: 'calc-kt', target: 'calc-scores', animated: true, style: { strokeWidth: 1.5 } },
+  { id: 'wq3-to-q3', source: 'wq-matrix-head3', target: 'calc-q-head3', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[3].primary } },
+  { id: 'wk3-to-k3', source: 'wk-matrix-head3', target: 'calc-k-head3', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[3].primary } },
+  { id: 'wv3-to-v3', source: 'wv-matrix-head3', target: 'calc-v-head3', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[3].primary } },
+
+  // Q,K to scores
+  { id: 'q1-to-scores1', source: 'calc-q-head1', target: 'calc-scores-head1', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[1].primary } },
+  { id: 'k1-to-scores1', source: 'calc-k-head1', target: 'calc-scores-head1', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[1].primary } },
   
-  // Scores to Softmax
-  { id: 'scores-to-softmax', source: 'calc-scores', target: 'calc-softmax', animated: true, style: { strokeWidth: 1.5 } },
+  { id: 'q2-to-scores2', source: 'calc-q-head2', target: 'calc-scores-head2', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[2].primary } },
+  { id: 'k2-to-scores2', source: 'calc-k-head2', target: 'calc-scores-head2', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[2].primary } },
   
-  // Softmax and V to Output
-  { id: 'softmax-to-output', source: 'calc-softmax', target: 'calc-output', animated: true, style: { strokeWidth: 1.5 } },
-  { id: 'v-to-output', source: 'calc-v', target: 'calc-output', animated: true, style: { strokeWidth: 1.5 } },
+  { id: 'q3-to-scores3', source: 'calc-q-head3', target: 'calc-scores-head3', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[3].primary } },
+  { id: 'k3-to-scores3', source: 'calc-k-head3', target: 'calc-scores-head3', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[3].primary } },
+
+  // Scores to softmax
+  { id: 'scores1-to-softmax1', source: 'calc-scores-head1', target: 'calc-softmax-head1', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[1].primary } },
+  { id: 'scores2-to-softmax2', source: 'calc-scores-head2', target: 'calc-softmax-head2', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[2].primary } },
+  { id: 'scores3-to-softmax3', source: 'calc-scores-head3', target: 'calc-softmax-head3', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[3].primary } },
+
+  // All heads to final output
+  { id: 'softmax1-to-output', source: 'calc-softmax-head1', target: 'calc-output', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[1].primary } },
+  { id: 'softmax2-to-output', source: 'calc-softmax-head2', target: 'calc-output', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[2].primary } },
+  { id: 'softmax3-to-output', source: 'calc-softmax-head3', target: 'calc-output', animated: true, style: { strokeWidth: 2, stroke: HEAD_COLORS[3].primary } },
+  { id: 'wo-to-output', source: 'wo-matrix', target: 'calc-output', animated: true, style: { strokeWidth: 2 } },
 ];
