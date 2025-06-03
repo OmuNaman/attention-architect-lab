@@ -1,79 +1,82 @@
-
 import type { Step } from '@/components/SelfAttentionApp';
 
-// Multi-Head Attention Matrix data
+// Multi-Head Attention Matrix data - Updated to 5×6
 export const INPUT_MATRIX = [
-  [1, 0, 0, 0, 0], // x1: "The"
-  [0, 1, 0, 0, 0], // x2: "next"
-  [0, 0, 1, 0, 0], // x3: "day"
-  [0, 0, 0, 1, 0], // x4: "is"
-  [0, 0, 0, 0, 1]  // x5: "bright"
+  [1, 0, 0, 0, 0, 0], // x1: "The"
+  [0, 1, 0, 0, 0, 0], // x2: "next"
+  [0, 0, 1, 0, 0, 0], // x3: "day"
+  [0, 0, 0, 1, 0, 0], // x4: "is"
+  [0, 0, 0, 0, 1, 0]  // x5: "bright"
 ];
 
-// Head 1 Matrices (3x5)
+// Head 1 Matrices (3×6) - Updated dimensions
 export const WQ_MATRIX_HEAD1 = [
-  [1, 0, 0, 0, 0],
-  [0, 1, 0, 0, 0],
-  [0, 0, 1, 0, 0]
+  [1, 0, 0, 0, 0, 0],
+  [0, 1, 0, 0, 0, 0],
+  [0, 0, 1, 0, 0, 0]
 ];
 
 export const WK_MATRIX_HEAD1 = [
-  [1, 0, 0, 0, 0],
-  [0, 1, 0, 0, 0],
-  [0, 0, 1, 0, 0]
+  [1, 0, 0, 0, 0, 0],
+  [0, 1, 0, 0, 0, 0],
+  [0, 0, 1, 0, 0, 0]
 ];
 
 export const WV_MATRIX_HEAD1 = [
-  [1, 0, 0, 0, 0],
-  [0, 1, 0, 0, 0],
-  [0, 0, 1, 0, 0]
+  [1, 0, 0, 0, 0, 0],
+  [0, 1, 0, 0, 0, 0],
+  [0, 0, 1, 0, 0, 0]
 ];
 
-// Head 2 Matrices (3x5)
+// Head 2 Matrices (3×6) - Updated dimensions
 export const WQ_MATRIX_HEAD2 = [
-  [0, 1, 0, 0, 0],
-  [0, 0, 1, 0, 0],
-  [0, 0, 0, 1, 0]
+  [0, 1, 0, 0, 0, 0],
+  [0, 0, 1, 0, 0, 0],
+  [0, 0, 0, 1, 0, 0]
 ];
 
 export const WK_MATRIX_HEAD2 = [
-  [0, 1, 0, 0, 0],
-  [0, 0, 1, 0, 0],
-  [0, 0, 0, 1, 0]
+  [0, 1, 0, 0, 0, 0],
+  [0, 0, 1, 0, 0, 0],
+  [0, 0, 0, 1, 0, 0]
 ];
 
 export const WV_MATRIX_HEAD2 = [
-  [0, 1, 0, 0, 0],
-  [0, 0, 1, 0, 0],
-  [0, 0, 0, 1, 0]
+  [0, 1, 0, 0, 0, 0],
+  [0, 0, 1, 0, 0, 0],
+  [0, 0, 0, 1, 0, 0]
 ];
 
-// Head 3 Matrices (3x5)
+// Head 3 Matrices (3×6) - Updated dimensions
 export const WQ_MATRIX_HEAD3 = [
-  [0, 0, 1, 0, 0],
-  [0, 0, 0, 1, 0],
-  [0, 0, 0, 0, 1]
+  [0, 0, 1, 0, 0, 0],
+  [0, 0, 0, 1, 0, 0],
+  [0, 0, 0, 0, 1, 0]
 ];
 
 export const WK_MATRIX_HEAD3 = [
-  [0, 0, 1, 0, 0],
-  [0, 0, 0, 1, 0],
-  [0, 0, 0, 0, 1]
+  [0, 0, 1, 0, 0, 0],
+  [0, 0, 0, 1, 0, 0],
+  [0, 0, 0, 0, 1, 0]
 ];
 
 export const WV_MATRIX_HEAD3 = [
-  [0, 0, 1, 0, 0],
-  [0, 0, 0, 1, 0],
-  [0, 0, 0, 0, 1]
+  [0, 0, 1, 0, 0, 0],
+  [0, 0, 0, 1, 0, 0],
+  [0, 0, 0, 0, 1, 0]
 ];
 
-// Output Weight Matrix (5x9)
+// Output Weight Matrix (9×5)
 export const WO_MATRIX = [
-  [1, 0, 0, 1, 0, 0, 1, 0, 0],
-  [0, 1, 0, 0, 1, 0, 0, 1, 0],
-  [0, 0, 1, 0, 0, 1, 0, 0, 1],
-  [1, 0, 0, 1, 0, 0, 1, 0, 0],
-  [0, 1, 0, 0, 1, 0, 0, 1, 0]
+  [1, 0, 0, 1, 0],
+  [0, 1, 0, 0, 1],
+  [0, 0, 1, 0, 0],
+  [1, 0, 0, 1, 0],
+  [0, 1, 0, 0, 1],
+  [0, 0, 1, 0, 0],
+  [1, 0, 0, 1, 0],
+  [0, 1, 0, 0, 1],
+  [0, 0, 1, 0, 0]
 ];
 
 // Scaling Factor (sqrt(d_k)) based on Key Matrix dimension 3
@@ -161,7 +164,7 @@ export function calculateExpected(step: Step, headNumber?: number): number[][] {
       const K = matrixMultiply(INPUT_MATRIX, kHeadMatrices[targetHead - 1].map((_, i) => kHeadMatrices[targetHead - 1].map(row => row[i])));
       const KT = K[0].map((_, i) => K.map(row => row[i]));
       const rawScores = matrixMultiply(Q, KT);
-      return rawScores.map(row => row.map(val => val / SCALING_FACTOR));
+      return rawScores.map(row => row.map(val => val / Math.sqrt(3)));
     }
     case 'softmax': {
       const headMatrices = [WQ_MATRIX_HEAD1, WQ_MATRIX_HEAD2, WQ_MATRIX_HEAD3];
@@ -172,7 +175,7 @@ export function calculateExpected(step: Step, headNumber?: number): number[][] {
       const K = matrixMultiply(INPUT_MATRIX, kHeadMatrices[targetHead - 1].map((_, i) => kHeadMatrices[targetHead - 1].map(row => row[i])));
       const KT = K[0].map((_, i) => K.map(row => row[i]));
       const rawScores = matrixMultiply(Q, KT);
-      const scaledScores = rawScores.map(row => row.map(val => val / SCALING_FACTOR));
+      const scaledScores = rawScores.map(row => row.map(val => val / Math.sqrt(3)));
       return softmax(scaledScores);
     }
     case 'output': {
@@ -190,7 +193,7 @@ export function calculateExpected(step: Step, headNumber?: number): number[][] {
         
         const KT = K[0].map((_, i) => K.map(row => row[i]));
         const rawScores = matrixMultiply(Q, KT);
-        const scaledScores = rawScores.map(row => row.map(val => val / SCALING_FACTOR));
+        const scaledScores = rawScores.map(row => row.map(val => val / Math.sqrt(3)));
         const attention = softmax(scaledScores);
         const headOutput = matrixMultiply(attention, V);
         
@@ -243,7 +246,7 @@ export function getStepData(step: Step, headNumber?: number) {
   const stepConfig = {
     input: {
       title: "Input Matrix",
-      description: "Starting input embeddings matrix (5×5)",
+      description: "Starting input embeddings matrix (5×6)",
       formula: "Input = X",
       resultName: "Input Matrix",
       inputMatrices: [],
@@ -255,8 +258,8 @@ export function getStepData(step: Step, headNumber?: number) {
       formula: `Q${headNumber || 1} = Input × Wq${headNumber || 1}`,
       resultName: `Q Matrix (5×3)`,
       inputMatrices: [
-        { name: "Input (5×5)", data: INPUT_MATRIX },
-        { name: `Wq${headNumber || 1} (5×3)`, data: headNumber === 1 ? WQ_MATRIX_HEAD1.map((_, i) => WQ_MATRIX_HEAD1.map(row => row[i])) :
+        { name: "Input (5×6)", data: INPUT_MATRIX },
+        { name: `Wq${headNumber || 1} (6×3)`, data: headNumber === 1 ? WQ_MATRIX_HEAD1.map((_, i) => WQ_MATRIX_HEAD1.map(row => row[i])) :
                                                    headNumber === 2 ? WQ_MATRIX_HEAD2.map((_, i) => WQ_MATRIX_HEAD2.map(row => row[i])) :
                                                    WQ_MATRIX_HEAD3.map((_, i) => WQ_MATRIX_HEAD3.map(row => row[i])) }
       ],
@@ -268,8 +271,8 @@ export function getStepData(step: Step, headNumber?: number) {
       formula: `K${headNumber || 1} = Input × Wk${headNumber || 1}`,
       resultName: `K Matrix (5×3)`,
       inputMatrices: [
-        { name: "Input (5×5)", data: INPUT_MATRIX },
-        { name: `Wk${headNumber || 1} (5×3)`, data: headNumber === 1 ? WK_MATRIX_HEAD1.map((_, i) => WK_MATRIX_HEAD1.map(row => row[i])) :
+        { name: "Input (5×6)", data: INPUT_MATRIX },
+        { name: `Wk${headNumber || 1} (6×3)`, data: headNumber === 1 ? WK_MATRIX_HEAD1.map((_, i) => WK_MATRIX_HEAD1.map(row => row[i])) :
                                                    headNumber === 2 ? WK_MATRIX_HEAD2.map((_, i) => WK_MATRIX_HEAD2.map(row => row[i])) :
                                                    WK_MATRIX_HEAD3.map((_, i) => WK_MATRIX_HEAD3.map(row => row[i])) }
       ],
@@ -281,8 +284,8 @@ export function getStepData(step: Step, headNumber?: number) {
       formula: `V${headNumber || 1} = Input × Wv${headNumber || 1}`,
       resultName: `V Matrix (5×3)`,
       inputMatrices: [
-        { name: "Input (5×5)", data: INPUT_MATRIX },
-        { name: `Wv${headNumber || 1} (5×3)`, data: headNumber === 1 ? WV_MATRIX_HEAD1.map((_, i) => WV_MATRIX_HEAD1.map(row => row[i])) :
+        { name: "Input (5×6)", data: INPUT_MATRIX },
+        { name: `Wv${headNumber || 1} (6×3)`, data: headNumber === 1 ? WV_MATRIX_HEAD1.map((_, i) => WV_MATRIX_HEAD1.map(row => row[i])) :
                                                    headNumber === 2 ? WV_MATRIX_HEAD2.map((_, i) => WV_MATRIX_HEAD2.map(row => row[i])) :
                                                    WV_MATRIX_HEAD3.map((_, i) => WV_MATRIX_HEAD3.map(row => row[i])) }
       ],

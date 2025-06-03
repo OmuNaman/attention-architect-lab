@@ -1,7 +1,8 @@
-import Landing from './Landing';
+
+import { SelfAttentionWorkflow } from '@/components/SelfAttentionWorkflow';
 
 const Index = () => {
-  return <Landing />;
+  return <SelfAttentionWorkflow />;
 };
 
 export default Index;
