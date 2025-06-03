@@ -20,28 +20,34 @@ const HEAD_COLORS = {
   }
 };
 
-// Layout constants for proper spacing
-const LAYOUT = {
+// Grid-based coordinate system with proper spacing
+const GRID = {
+  // Base coordinates for the grid system
+  ORIGIN_X: 100,
+  ORIGIN_Y: 100,
+  
+  // Spacing between columns and rows
+  COLUMN_SPACING: 600,   // Horizontal distance between columns
+  ROW_SPACING: 400,      // Vertical distance between rows within a head
+  HEAD_SPACING: 1200,    // Vertical distance between different heads
+  
+  // Node dimensions for calculations
   NODE_WIDTH: 320,
   NODE_HEIGHT: 200,
-  HORIZONTAL_SPACING: 500,
-  VERTICAL_SPACING: 300,
-  HEAD_VERTICAL_SPACING: 600,
-  HEAD_INTERNAL_SPACING: 250,
 };
 
-// Calculate positions based on grid layout
-const getPosition = (col: number, row: number, headOffset: number = 0) => ({
-  x: col * LAYOUT.HORIZONTAL_SPACING + 100,
-  y: row * LAYOUT.VERTICAL_SPACING + headOffset + 150
+// Helper function to calculate grid positions
+const getGridPosition = (column: number, row: number, headIndex: number = 0) => ({
+  x: GRID.ORIGIN_X + (column * GRID.COLUMN_SPACING),
+  y: GRID.ORIGIN_Y + (row * GRID.ROW_SPACING) + (headIndex * GRID.HEAD_SPACING)
 });
 
 export const initialNodes: Node[] = [
-  // Input Matrix (Column 0)
+  // Input Matrix (Column 0, Row 1, centered between all heads)
   {
     id: 'input',
     type: 'matrix',
-    position: getPosition(0, 2),
+    position: getGridPosition(0, 1, 1), // Centered vertically between the 3 heads
     data: {
       label: 'Input Matrix',
       matrix: [
@@ -56,12 +62,12 @@ export const initialNodes: Node[] = [
     }
   },
 
-  // ====================== HEAD 1 (RED) ======================
+  // ====================== HEAD 1 (RED) - Row indices 0-2 ======================
   // Weight Matrices - Head 1 (Column 1)
   {
     id: 'wq-head1',
     type: 'matrix',
-    position: getPosition(1, 0, 0),
+    position: getGridPosition(1, 0, 0),
     data: {
       label: 'Wq Matrix',
       matrix: [
@@ -69,9 +75,10 @@ export const initialNodes: Node[] = [
         [0, 1, 0],
         [0, 0, 1],
         [0, 0, 0],
+        [0, 0, 0],
         [0, 0, 0]
       ],
-      description: 'Query weights (5×3)',
+      description: 'Query weights (6×3)',
       headNumber: 1,
       headColor: HEAD_COLORS[1]
     }
@@ -79,7 +86,7 @@ export const initialNodes: Node[] = [
   {
     id: 'wk-head1',
     type: 'matrix',
-    position: getPosition(1, 1, 0),
+    position: getGridPosition(1, 1, 0),
     data: {
       label: 'Wk Matrix',
       matrix: [
@@ -87,9 +94,10 @@ export const initialNodes: Node[] = [
         [0, 1, 0],
         [0, 0, 1],
         [0, 0, 0],
+        [0, 0, 0],
         [0, 0, 0]
       ],
-      description: 'Key weights (5×3)',
+      description: 'Key weights (6×3)',
       headNumber: 1,
       headColor: HEAD_COLORS[1]
     }
@@ -97,7 +105,7 @@ export const initialNodes: Node[] = [
   {
     id: 'wv-head1',
     type: 'matrix',
-    position: getPosition(1, 2, 0),
+    position: getGridPosition(1, 2, 0),
     data: {
       label: 'Wv Matrix',
       matrix: [
@@ -105,9 +113,10 @@ export const initialNodes: Node[] = [
         [0, 1, 0],
         [0, 0, 1],
         [0, 0, 0],
+        [0, 0, 0],
         [0, 0, 0]
       ],
-      description: 'Value weights (5×3)',
+      description: 'Value weights (6×3)',
       headNumber: 1,
       headColor: HEAD_COLORS[1]
     }
@@ -117,7 +126,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-q-head1',
     type: 'calculation',
-    position: getPosition(2, 0, 0),
+    position: getGridPosition(2, 0, 0),
     data: {
       label: 'Calculate Q₁',
       formula: 'Q₁ = Input × Wq₁',
@@ -129,7 +138,7 @@ export const initialNodes: Node[] = [
         [0, 0, 0],
         [0, 0, 0]
       ],
-      hint: 'Multiply the input matrix (5×6) with Wq₁ (5×3) to get Q₁ (5×3)',
+      hint: 'Multiply the input matrix (5×6) with Wq₁ (6×3) to get Q₁ (5×3)',
       headNumber: 1,
       headColor: HEAD_COLORS[1]
     }
@@ -137,7 +146,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-k-head1',
     type: 'calculation',
-    position: getPosition(2, 1, 0),
+    position: getGridPosition(2, 1, 0),
     data: {
       label: 'Calculate K₁',
       formula: 'K₁ = Input × Wk₁',
@@ -149,7 +158,7 @@ export const initialNodes: Node[] = [
         [0, 0, 0],
         [0, 0, 0]
       ],
-      hint: 'Multiply the input matrix (5×6) with Wk₁ (5×3) to get K₁ (5×3)',
+      hint: 'Multiply the input matrix (5×6) with Wk₁ (6×3) to get K₁ (5×3)',
       headNumber: 1,
       headColor: HEAD_COLORS[1]
     }
@@ -157,7 +166,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-v-head1',
     type: 'calculation',
-    position: getPosition(2, 2, 0),
+    position: getGridPosition(2, 2, 0),
     data: {
       label: 'Calculate V₁',
       formula: 'V₁ = Input × Wv₁',
@@ -169,7 +178,7 @@ export const initialNodes: Node[] = [
         [0, 0, 0],
         [0, 0, 0]
       ],
-      hint: 'Multiply the input matrix (5×6) with Wv₁ (5×3) to get V₁ (5×3)',
+      hint: 'Multiply the input matrix (5×6) with Wv₁ (6×3) to get V₁ (5×3)',
       headNumber: 1,
       headColor: HEAD_COLORS[1]
     }
@@ -179,7 +188,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-scores-head1',
     type: 'calculation',
-    position: getPosition(3, 0.5, 0),
+    position: getGridPosition(3, 0.5, 0),
     data: {
       label: 'Attention Scores₁',
       formula: 'Scores₁ = (Q₁ × K₁ᵀ) / √3',
@@ -201,7 +210,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-softmax-head1',
     type: 'calculation',
-    position: getPosition(4, 0.5, 0),
+    position: getGridPosition(4, 0.5, 0),
     data: {
       label: 'Softmax₁',
       formula: 'Attention₁ = softmax(Scores₁)',
@@ -219,12 +228,12 @@ export const initialNodes: Node[] = [
     }
   },
 
-  // ====================== HEAD 2 (TEAL) ======================
-  // Weight Matrices - Head 2 (Column 1, offset by HEAD_VERTICAL_SPACING)
+  // ====================== HEAD 2 (TEAL) - Row indices 0-2, Head index 1 ======================
+  // Weight Matrices - Head 2 (Column 1)
   {
     id: 'wq-head2',
     type: 'matrix',
-    position: getPosition(1, 0, LAYOUT.HEAD_VERTICAL_SPACING),
+    position: getGridPosition(1, 0, 1),
     data: {
       label: 'Wq Matrix',
       matrix: [
@@ -232,9 +241,10 @@ export const initialNodes: Node[] = [
         [1, 0, 0],
         [0, 1, 0],
         [0, 0, 1],
+        [0, 0, 0],
         [0, 0, 0]
       ],
-      description: 'Query weights (5×3)',
+      description: 'Query weights (6×3)',
       headNumber: 2,
       headColor: HEAD_COLORS[2]
     }
@@ -242,7 +252,7 @@ export const initialNodes: Node[] = [
   {
     id: 'wk-head2',
     type: 'matrix',
-    position: getPosition(1, 1, LAYOUT.HEAD_VERTICAL_SPACING),
+    position: getGridPosition(1, 1, 1),
     data: {
       label: 'Wk Matrix',
       matrix: [
@@ -250,9 +260,10 @@ export const initialNodes: Node[] = [
         [1, 0, 0],
         [0, 1, 0],
         [0, 0, 1],
+        [0, 0, 0],
         [0, 0, 0]
       ],
-      description: 'Key weights (5×3)',
+      description: 'Key weights (6×3)',
       headNumber: 2,
       headColor: HEAD_COLORS[2]
     }
@@ -260,7 +271,7 @@ export const initialNodes: Node[] = [
   {
     id: 'wv-head2',
     type: 'matrix',
-    position: getPosition(1, 2, LAYOUT.HEAD_VERTICAL_SPACING),
+    position: getGridPosition(1, 2, 1),
     data: {
       label: 'Wv Matrix',
       matrix: [
@@ -268,9 +279,10 @@ export const initialNodes: Node[] = [
         [1, 0, 0],
         [0, 1, 0],
         [0, 0, 1],
+        [0, 0, 0],
         [0, 0, 0]
       ],
-      description: 'Value weights (5×3)',
+      description: 'Value weights (6×3)',
       headNumber: 2,
       headColor: HEAD_COLORS[2]
     }
@@ -280,7 +292,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-q-head2',
     type: 'calculation',
-    position: getPosition(2, 0, LAYOUT.HEAD_VERTICAL_SPACING),
+    position: getGridPosition(2, 0, 1),
     data: {
       label: 'Calculate Q₂',
       formula: 'Q₂ = Input × Wq₂',
@@ -292,7 +304,7 @@ export const initialNodes: Node[] = [
         [0, 0, 1],
         [0, 0, 0]
       ],
-      hint: 'Multiply the input matrix (5×6) with Wq₂ (5×3) to get Q₂ (5×3)',
+      hint: 'Multiply the input matrix (5×6) with Wq₂ (6×3) to get Q₂ (5×3)',
       headNumber: 2,
       headColor: HEAD_COLORS[2]
     }
@@ -300,7 +312,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-k-head2',
     type: 'calculation',
-    position: getPosition(2, 1, LAYOUT.HEAD_VERTICAL_SPACING),
+    position: getGridPosition(2, 1, 1),
     data: {
       label: 'Calculate K₂',
       formula: 'K₂ = Input × Wk₂',
@@ -312,7 +324,7 @@ export const initialNodes: Node[] = [
         [0, 0, 1],
         [0, 0, 0]
       ],
-      hint: 'Multiply the input matrix (5×6) with Wk₂ (5×3) to get K₂ (5×3)',
+      hint: 'Multiply the input matrix (5×6) with Wk₂ (6×3) to get K₂ (5×3)',
       headNumber: 2,
       headColor: HEAD_COLORS[2]
     }
@@ -320,7 +332,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-v-head2',
     type: 'calculation',
-    position: getPosition(2, 2, LAYOUT.HEAD_VERTICAL_SPACING),
+    position: getGridPosition(2, 2, 1),
     data: {
       label: 'Calculate V₂',
       formula: 'V₂ = Input × Wv₂',
@@ -332,7 +344,7 @@ export const initialNodes: Node[] = [
         [0, 0, 1],
         [0, 0, 0]
       ],
-      hint: 'Multiply the input matrix (5×6) with Wv₂ (5×3) to get V₂ (5×3)',
+      hint: 'Multiply the input matrix (5×6) with Wv₂ (6×3) to get V₂ (5×3)',
       headNumber: 2,
       headColor: HEAD_COLORS[2]
     }
@@ -342,7 +354,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-scores-head2',
     type: 'calculation',
-    position: getPosition(3, 0.5, LAYOUT.HEAD_VERTICAL_SPACING),
+    position: getGridPosition(3, 0.5, 1),
     data: {
       label: 'Attention Scores₂',
       formula: 'Scores₂ = (Q₂ × K₂ᵀ) / √3',
@@ -364,7 +376,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-softmax-head2',
     type: 'calculation',
-    position: getPosition(4, 0.5, LAYOUT.HEAD_VERTICAL_SPACING),
+    position: getGridPosition(4, 0.5, 1),
     data: {
       label: 'Softmax₂',
       formula: 'Attention₂ = softmax(Scores₂)',
@@ -382,12 +394,12 @@ export const initialNodes: Node[] = [
     }
   },
 
-  // ====================== HEAD 3 (BLUE) ======================
-  // Weight Matrices - Head 3 (Column 1, offset by 2 * HEAD_VERTICAL_SPACING)
+  // ====================== HEAD 3 (BLUE) - Row indices 0-2, Head index 2 ======================
+  // Weight Matrices - Head 3 (Column 1)
   {
     id: 'wq-head3',
     type: 'matrix',
-    position: getPosition(1, 0, LAYOUT.HEAD_VERTICAL_SPACING * 2),
+    position: getGridPosition(1, 0, 2),
     data: {
       label: 'Wq Matrix',
       matrix: [
@@ -395,9 +407,10 @@ export const initialNodes: Node[] = [
         [0, 0, 0],
         [1, 0, 0],
         [0, 1, 0],
-        [0, 0, 1]
+        [0, 0, 1],
+        [0, 0, 0]
       ],
-      description: 'Query weights (5×3)',
+      description: 'Query weights (6×3)',
       headNumber: 3,
       headColor: HEAD_COLORS[3]
     }
@@ -405,7 +418,7 @@ export const initialNodes: Node[] = [
   {
     id: 'wk-head3',
     type: 'matrix',
-    position: getPosition(1, 1, LAYOUT.HEAD_VERTICAL_SPACING * 2),
+    position: getGridPosition(1, 1, 2),
     data: {
       label: 'Wk Matrix',
       matrix: [
@@ -413,9 +426,10 @@ export const initialNodes: Node[] = [
         [0, 0, 0],
         [1, 0, 0],
         [0, 1, 0],
-        [0, 0, 1]
+        [0, 0, 1],
+        [0, 0, 0]
       ],
-      description: 'Key weights (5×3)',
+      description: 'Key weights (6×3)',
       headNumber: 3,
       headColor: HEAD_COLORS[3]
     }
@@ -423,7 +437,7 @@ export const initialNodes: Node[] = [
   {
     id: 'wv-head3',
     type: 'matrix',
-    position: getPosition(1, 2, LAYOUT.HEAD_VERTICAL_SPACING * 2),
+    position: getGridPosition(1, 2, 2),
     data: {
       label: 'Wv Matrix',
       matrix: [
@@ -431,9 +445,10 @@ export const initialNodes: Node[] = [
         [0, 0, 0],
         [1, 0, 0],
         [0, 1, 0],
-        [0, 0, 1]
+        [0, 0, 1],
+        [0, 0, 0]
       ],
-      description: 'Value weights (5×3)',
+      description: 'Value weights (6×3)',
       headNumber: 3,
       headColor: HEAD_COLORS[3]
     }
@@ -443,7 +458,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-q-head3',
     type: 'calculation',
-    position: getPosition(2, 0, LAYOUT.HEAD_VERTICAL_SPACING * 2),
+    position: getGridPosition(2, 0, 2),
     data: {
       label: 'Calculate Q₃',
       formula: 'Q₃ = Input × Wq₃',
@@ -455,7 +470,7 @@ export const initialNodes: Node[] = [
         [0, 1, 0],
         [0, 0, 1]
       ],
-      hint: 'Multiply the input matrix (5×6) with Wq₃ (5×3) to get Q₃ (5×3)',
+      hint: 'Multiply the input matrix (5×6) with Wq₃ (6×3) to get Q₃ (5×3)',
       headNumber: 3,
       headColor: HEAD_COLORS[3]
     }
@@ -463,7 +478,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-k-head3',
     type: 'calculation',
-    position: getPosition(2, 1, LAYOUT.HEAD_VERTICAL_SPACING * 2),
+    position: getGridPosition(2, 1, 2),
     data: {
       label: 'Calculate K₃',
       formula: 'K₃ = Input × Wk₃',
@@ -475,7 +490,7 @@ export const initialNodes: Node[] = [
         [0, 1, 0],
         [0, 0, 1]
       ],
-      hint: 'Multiply the input matrix (5×6) with Wk₃ (5×3) to get K₃ (5×3)',
+      hint: 'Multiply the input matrix (5×6) with Wk₃ (6×3) to get K₃ (5×3)',
       headNumber: 3,
       headColor: HEAD_COLORS[3]
     }
@@ -483,7 +498,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-v-head3',
     type: 'calculation',
-    position: getPosition(2, 2, LAYOUT.HEAD_VERTICAL_SPACING * 2),
+    position: getGridPosition(2, 2, 2),
     data: {
       label: 'Calculate V₃',
       formula: 'V₃ = Input × Wv₃',
@@ -495,7 +510,7 @@ export const initialNodes: Node[] = [
         [0, 1, 0],
         [0, 0, 1]
       ],
-      hint: 'Multiply the input matrix (5×6) with Wv₃ (5×3) to get V₃ (5×3)',
+      hint: 'Multiply the input matrix (5×6) with Wv₃ (6×3) to get V₃ (5×3)',
       headNumber: 3,
       headColor: HEAD_COLORS[3]
     }
@@ -505,7 +520,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-scores-head3',
     type: 'calculation',
-    position: getPosition(3, 0.5, LAYOUT.HEAD_VERTICAL_SPACING * 2),
+    position: getGridPosition(3, 0.5, 2),
     data: {
       label: 'Attention Scores₃',
       formula: 'Scores₃ = (Q₃ × K₃ᵀ) / √3',
@@ -527,7 +542,7 @@ export const initialNodes: Node[] = [
   {
     id: 'calc-softmax-head3',
     type: 'calculation',
-    position: getPosition(4, 0.5, LAYOUT.HEAD_VERTICAL_SPACING * 2),
+    position: getGridPosition(4, 0.5, 2),
     data: {
       label: 'Softmax₃',
       formula: 'Attention₃ = softmax(Scores₃)',
@@ -545,12 +560,33 @@ export const initialNodes: Node[] = [
     }
   },
 
+  // ====================== CONCATENATION STEP ======================
+  // Concatenated Matrix (Column 5, centered vertically between all heads)
+  {
+    id: 'concat-matrix',
+    type: 'calculation',
+    position: getGridPosition(5, 1, 1),
+    data: {
+      label: 'Concatenate Heads',
+      formula: 'Concat = [Attention₁ ⊗ V₁ | Attention₂ ⊗ V₂ | Attention₃ ⊗ V₃]',
+      description: 'Concatenated attention outputs (5×9)',
+      expectedMatrix: [
+        [1, 0, 0, 0, 0, 0, 0.2, 0.2, 0.2],
+        [0, 1, 0, 1, 0, 0, 0.2, 0.2, 0.2],
+        [0, 0, 1, 0, 1, 0, 1, 0, 0],
+        [0.2, 0.2, 0.2, 0, 0, 1, 0, 1, 0],
+        [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 1]
+      ],
+      hint: 'Concatenate the weighted value matrices from all three heads horizontally'
+    }
+  },
+
   // ====================== FINAL LAYERS ======================
-  // Output Weight Matrix (Column 5, centered vertically)
+  // Output Weight Matrix (Column 6, centered vertically)
   {
     id: 'wo-matrix',
     type: 'matrix',
-    position: getPosition(5, 1, LAYOUT.HEAD_VERTICAL_SPACING),
+    position: getGridPosition(6, 1, 1),
     data: {
       label: 'Wo Matrix',
       matrix: [
@@ -568,29 +604,29 @@ export const initialNodes: Node[] = [
     }
   },
 
-  // Final Output Calculation (Column 6, centered vertically)
+  // Final Output Calculation (Column 7, centered vertically)
   {
     id: 'calc-output',
     type: 'calculation',
-    position: getPosition(6, 1, LAYOUT.HEAD_VERTICAL_SPACING),
+    position: getGridPosition(7, 1, 1),
     data: {
       label: 'Final Output',
-      formula: 'Output = Concat(Head₁, Head₂, Head₃) × Wo',
-      description: 'Multi-head attention output',
+      formula: 'Output = Concat × Wo',
+      description: 'Multi-head attention output (5×5)',
       expectedMatrix: [
-        [1, 0, 0, 1, 0],
-        [0, 1, 0, 0, 1],
-        [0, 0, 1, 0, 0],
-        [0.2, 0.4, 0.2, 0.4, 0.4],
-        [0.2, 0.4, 0.2, 0.4, 0.4]
+        [1.2, 0.2, 0.2, 1.2, 0.2],
+        [0.2, 1.2, 0.2, 1.2, 1.2],
+        [1, 0, 1, 1, 0],
+        [0.2, 1.2, 0.2, 0.2, 1.2],
+        [0.4, 0.4, 0.4, 0.4, 0.4]
       ],
-      hint: 'Concatenate all head outputs (5×9) then multiply by Wo (9×5)'
+      hint: 'Multiply the concatenated matrix (5×9) with Wo (9×5) to get the final output (5×5)'
     }
   }
 ];
 
 export const initialEdges: Edge[] = [
-  // Input to all weight matrices
+  // Input to all weight matrices across all heads
   { id: 'e-input-wq1', source: 'input', target: 'wq-head1', animated: true },
   { id: 'e-input-wk1', source: 'input', target: 'wk-head1', animated: true },
   { id: 'e-input-wv1', source: 'input', target: 'wv-head1', animated: true },
@@ -601,7 +637,7 @@ export const initialEdges: Edge[] = [
   { id: 'e-input-wk3', source: 'input', target: 'wk-head3', animated: true },
   { id: 'e-input-wv3', source: 'input', target: 'wv-head3', animated: true },
 
-  // Weight matrices to calculations
+  // Weight matrices to Q, K, V calculations for each head
   { id: 'e-wq1-calcq1', source: 'wq-head1', target: 'calc-q-head1' },
   { id: 'e-wk1-calck1', source: 'wk-head1', target: 'calc-k-head1' },
   { id: 'e-wv1-calcv1', source: 'wv-head1', target: 'calc-v-head1' },
@@ -612,7 +648,7 @@ export const initialEdges: Edge[] = [
   { id: 'e-wk3-calck3', source: 'wk-head3', target: 'calc-k-head3' },
   { id: 'e-wv3-calcv3', source: 'wv-head3', target: 'calc-v-head3' },
 
-  // Q and K to attention scores
+  // Q and K to attention scores for each head
   { id: 'e-q1-scores1', source: 'calc-q-head1', target: 'calc-scores-head1' },
   { id: 'e-k1-scores1', source: 'calc-k-head1', target: 'calc-scores-head1' },
   { id: 'e-q2-scores2', source: 'calc-q-head2', target: 'calc-scores-head2' },
@@ -620,16 +656,22 @@ export const initialEdges: Edge[] = [
   { id: 'e-q3-scores3', source: 'calc-q-head3', target: 'calc-scores-head3' },
   { id: 'e-k3-scores3', source: 'calc-k-head3', target: 'calc-scores-head3' },
 
-  // Scores to softmax
+  // Scores to softmax for each head
   { id: 'e-scores1-softmax1', source: 'calc-scores-head1', target: 'calc-softmax-head1' },
   { id: 'e-scores2-softmax2', source: 'calc-scores-head2', target: 'calc-softmax-head2' },
   { id: 'e-scores3-softmax3', source: 'calc-scores-head3', target: 'calc-softmax-head3' },
 
-  // All softmax to final output
-  { id: 'e-softmax1-output', source: 'calc-softmax-head1', target: 'calc-output' },
-  { id: 'e-softmax2-output', source: 'calc-softmax-head2', target: 'calc-output' },
-  { id: 'e-softmax3-output', source: 'calc-softmax-head3', target: 'calc-output' },
-  
-  // Output weights to final calculation
+  // V matrices to concatenation
+  { id: 'e-v1-concat', source: 'calc-v-head1', target: 'concat-matrix' },
+  { id: 'e-v2-concat', source: 'calc-v-head2', target: 'concat-matrix' },
+  { id: 'e-v3-concat', source: 'calc-v-head3', target: 'concat-matrix' },
+
+  // Softmax outputs to concatenation
+  { id: 'e-softmax1-concat', source: 'calc-softmax-head1', target: 'concat-matrix' },
+  { id: 'e-softmax2-concat', source: 'calc-softmax-head2', target: 'concat-matrix' },
+  { id: 'e-softmax3-concat', source: 'calc-softmax-head3', target: 'concat-matrix' },
+
+  // Concatenation and output weights to final output
+  { id: 'e-concat-output', source: 'concat-matrix', target: 'calc-output' },
   { id: 'e-wo-output', source: 'wo-matrix', target: 'calc-output' }
 ];

@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   ReactFlow,
@@ -60,10 +61,15 @@ function WorkflowContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleT
           disabled = !completedNodeIds.has('calc-scores-head2');
         } else if (node.id === 'calc-softmax-head3') {
           disabled = !completedNodeIds.has('calc-scores-head3');
-        } else if (node.id === 'calc-output') {
-          disabled = !(completedNodeIds.has('calc-softmax-head1') && 
+        } else if (node.id === 'concat-matrix') {
+          disabled = !(completedNodeIds.has('calc-v-head1') && 
+                      completedNodeIds.has('calc-v-head2') && 
+                      completedNodeIds.has('calc-v-head3') &&
+                      completedNodeIds.has('calc-softmax-head1') && 
                       completedNodeIds.has('calc-softmax-head2') && 
                       completedNodeIds.has('calc-softmax-head3'));
+        } else if (node.id === 'calc-output') {
+          disabled = !completedNodeIds.has('concat-matrix');
         } else {
           disabled = true;
         }
