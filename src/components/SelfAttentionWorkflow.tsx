@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   ReactFlow,
@@ -56,16 +55,13 @@ function WorkflowContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleT
         } else if (node.id === 'calc-scores-head3') {
           disabled = !(completedNodeIds.has('calc-q-head3') && completedNodeIds.has('calc-k-head3'));
         } else if (node.id === 'calc-softmax-head1') {
-          disabled = !completedNodeIds.has('calc-scores-head1');
+          disabled = !(completedNodeIds.has('calc-scores-head1') && completedNodeIds.has('calc-v-head1'));
         } else if (node.id === 'calc-softmax-head2') {
-          disabled = !completedNodeIds.has('calc-scores-head2');
+          disabled = !(completedNodeIds.has('calc-scores-head2') && completedNodeIds.has('calc-v-head2'));
         } else if (node.id === 'calc-softmax-head3') {
-          disabled = !completedNodeIds.has('calc-scores-head3');
+          disabled = !(completedNodeIds.has('calc-scores-head3') && completedNodeIds.has('calc-v-head3'));
         } else if (node.id === 'concat-matrix') {
-          disabled = !(completedNodeIds.has('calc-v-head1') && 
-                      completedNodeIds.has('calc-v-head2') && 
-                      completedNodeIds.has('calc-v-head3') &&
-                      completedNodeIds.has('calc-softmax-head1') && 
+          disabled = !(completedNodeIds.has('calc-softmax-head1') && 
                       completedNodeIds.has('calc-softmax-head2') && 
                       completedNodeIds.has('calc-softmax-head3'));
         } else if (node.id === 'calc-output') {
