@@ -1,8 +1,8 @@
 
-import { NeuralNetworkWorkflow } from '@/components/NeuralNetworkWorkflow';
+import { NeuralNetworkApp } from '@/components/NeuralNetworkApp';
 
 const Index = () => {
-  return <NeuralNetworkWorkflow />;
+  return <NeuralNetworkApp />;
 };
 
 export default Index;

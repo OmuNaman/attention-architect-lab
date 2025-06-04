@@ -16,13 +16,13 @@ import '@xyflow/react/dist/style.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
-import { RotateCcw, Play, Pause, Zap, Brain } from 'lucide-react';
+import { RotateCcw, MessageSquare } from 'lucide-react';
 import { NeuronNode } from '@/components/neural/NeuronNode';
 import { InputNode } from '@/components/neural/InputNode';
 import { OutputNode } from '@/components/neural/OutputNode';
 import { WeightEdge } from '@/components/neural/WeightEdge';
 import { ControlPanel } from '@/components/neural/ControlPanel';
-import { DataVisualizer } from '@/components/neural/DataVisualizer';
+import { ChatBot } from '@/components/ChatBot';
 
 const nodeTypes = {
   neuron: NeuronNode,
@@ -34,243 +34,72 @@ const edgeTypes = {
   weight: WeightEdge,
 };
 
-function NetworkContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleTheme: (isDark: boolean) => void }) {
-  const [isTraining, setIsTraining] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentEpoch, setCurrentEpoch] = useState(0);
-  const [learningRate, setLearningRate] = useState(0.1);
+function WorkflowContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleTheme: (isDark: boolean) => void }) {
+  const [learningRate, setLearningRate] = useState(0.01);
   const [activationFunction, setActivationFunction] = useState('relu');
-  const [inputData, setInputData] = useState([0.5, 0.3, 0.8]);
+  const [currentEpoch, setCurrentEpoch] = useState(0);
+  const [isTraining, setIsTraining] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
-  // Create initial neural network structure
-  const initialNodes = useMemo(() => [
-    // Input Layer
+  // Initial network structure
+  const initialNodes = [
+    // Input layer
     {
       id: 'input-1',
       type: 'input',
-      position: { x: 50, y: 100 },
-      data: { 
-        label: 'Input 1',
-        value: inputData[0],
-        index: 0,
-        onValueChange: (value: number) => {
-          setInputData(prev => {
-            const newData = [...prev];
-            newData[0] = value;
-            return newData;
-          });
-        }
-      },
+      position: { x: 100, y: 200 },
+      data: { label: 'X₁', value: 0.5, index: 0, onValueChange: (val: number) => console.log('Input 1:', val) },
     },
     {
       id: 'input-2',
       type: 'input',
-      position: { x: 50, y: 250 },
-      data: { 
-        label: 'Input 2',
-        value: inputData[1],
-        index: 1,
-        onValueChange: (value: number) => {
-          setInputData(prev => {
-            const newData = [...prev];
-            newData[1] = value;
-            return newData;
-          });
-        }
-      },
-    },
-    {
-      id: 'input-3',
-      type: 'input',
-      position: { x: 50, y: 400 },
-      data: { 
-        label: 'Input 3',
-        value: inputData[2],
-        index: 2,
-        onValueChange: (value: number) => {
-          setInputData(prev => {
-            const newData = [...prev];
-            newData[2] = value;
-            return newData;
-          });
-        }
-      },
+      position: { x: 100, y: 300 },
+      data: { label: 'X₂', value: 0.8, index: 1, onValueChange: (val: number) => console.log('Input 2:', val) },
     },
     
-    // Hidden Layer 1
+    // Hidden layer
     {
-      id: 'hidden1-1',
+      id: 'neuron-1',
       type: 'neuron',
-      position: { x: 300, y: 80 },
-      data: { 
-        label: 'H1-1',
-        activation: activationFunction,
-        isActive: isPlaying,
-        layerIndex: 1,
-        neuronIndex: 0
-      },
+      position: { x: 400, y: 150 },
+      data: { label: 'H₁', activation: activationFunction, isActive: true, layerIndex: 1, neuronIndex: 0 },
     },
     {
-      id: 'hidden1-2',
+      id: 'neuron-2',
       type: 'neuron',
-      position: { x: 300, y: 180 },
-      data: { 
-        label: 'H1-2',
-        activation: activationFunction,
-        isActive: isPlaying,
-        layerIndex: 1,
-        neuronIndex: 1
-      },
+      position: { x: 400, y: 250 },
+      data: { label: 'H₂', activation: activationFunction, isActive: true, layerIndex: 1, neuronIndex: 1 },
     },
     {
-      id: 'hidden1-3',
+      id: 'neuron-3',
       type: 'neuron',
-      position: { x: 300, y: 280 },
-      data: { 
-        label: 'H1-3',
-        activation: activationFunction,
-        isActive: isPlaying,
-        layerIndex: 1,
-        neuronIndex: 2
-      },
-    },
-    {
-      id: 'hidden1-4',
-      type: 'neuron',
-      position: { x: 300, y: 380 },
-      data: { 
-        label: 'H1-4',
-        activation: activationFunction,
-        isActive: isPlaying,
-        layerIndex: 1,
-        neuronIndex: 3
-      },
+      position: { x: 400, y: 350 },
+      data: { label: 'H₃', activation: activationFunction, isActive: true, layerIndex: 1, neuronIndex: 2 },
     },
     
-    // Hidden Layer 2
-    {
-      id: 'hidden2-1',
-      type: 'neuron',
-      position: { x: 550, y: 130 },
-      data: { 
-        label: 'H2-1',
-        activation: activationFunction,
-        isActive: isPlaying,
-        layerIndex: 2,
-        neuronIndex: 0
-      },
-    },
-    {
-      id: 'hidden2-2',
-      type: 'neuron',
-      position: { x: 550, y: 230 },
-      data: { 
-        label: 'H2-2',
-        activation: activationFunction,
-        isActive: isPlaying,
-        layerIndex: 2,
-        neuronIndex: 1
-      },
-    },
-    {
-      id: 'hidden2-3',
-      type: 'neuron',
-      position: { x: 550, y: 330 },
-      data: { 
-        label: 'H2-3',
-        activation: activationFunction,
-        isActive: isPlaying,
-        layerIndex: 2,
-        neuronIndex: 2
-      },
-    },
-    
-    // Output Layer
+    // Output layer
     {
       id: 'output-1',
       type: 'output',
-      position: { x: 800, y: 180 },
-      data: { 
-        label: 'Output 1',
-        value: 0,
-        prediction: 'Class A'
-      },
+      position: { x: 700, y: 250 },
+      data: { label: 'Output', value: 0.73, prediction: 'Class A' },
     },
-    {
-      id: 'output-2',
-      type: 'output',
-      position: { x: 800, y: 280 },
-      data: { 
-        label: 'Output 2',
-        value: 0,
-        prediction: 'Class B'
-      },
-    },
-  ], [inputData, activationFunction, isPlaying]);
+  ];
 
-  const initialEdges = useMemo(() => {
-    const edges = [];
+  const initialEdges = [
+    // Input to hidden connections
+    { id: 'e1-h1', source: 'input-1', target: 'neuron-1', type: 'weight', data: { weight: 0.4, isActive: true } },
+    { id: 'e1-h2', source: 'input-1', target: 'neuron-2', type: 'weight', data: { weight: -0.2, isActive: true } },
+    { id: 'e1-h3', source: 'input-1', target: 'neuron-3', type: 'weight', data: { weight: 0.6, isActive: true } },
+    { id: 'e2-h1', source: 'input-2', target: 'neuron-1', type: 'weight', data: { weight: 0.3, isActive: true } },
+    { id: 'e2-h2', source: 'input-2', target: 'neuron-2', type: 'weight', data: { weight: 0.8, isActive: true } },
+    { id: 'e2-h3', source: 'input-2', target: 'neuron-3', type: 'weight', data: { weight: -0.1, isActive: true } },
     
-    // Input to Hidden Layer 1
-    const inputIds = ['input-1', 'input-2', 'input-3'];
-    const hidden1Ids = ['hidden1-1', 'hidden1-2', 'hidden1-3', 'hidden1-4'];
-    
-    inputIds.forEach(inputId => {
-      hidden1Ids.forEach(hiddenId => {
-        edges.push({
-          id: `${inputId}-${hiddenId}`,
-          source: inputId,
-          target: hiddenId,
-          type: 'weight',
-          data: { 
-            weight: Math.random() * 2 - 1,
-            isActive: isPlaying
-          },
-          animated: isPlaying,
-        });
-      });
-    });
-    
-    // Hidden Layer 1 to Hidden Layer 2
-    const hidden2Ids = ['hidden2-1', 'hidden2-2', 'hidden2-3'];
-    
-    hidden1Ids.forEach(hidden1Id => {
-      hidden2Ids.forEach(hidden2Id => {
-        edges.push({
-          id: `${hidden1Id}-${hidden2Id}`,
-          source: hidden1Id,
-          target: hidden2Id,
-          type: 'weight',
-          data: { 
-            weight: Math.random() * 2 - 1,
-            isActive: isPlaying
-          },
-          animated: isPlaying,
-        });
-      });
-    });
-    
-    // Hidden Layer 2 to Output
-    const outputIds = ['output-1', 'output-2'];
-    
-    hidden2Ids.forEach(hidden2Id => {
-      outputIds.forEach(outputId => {
-        edges.push({
-          id: `${hidden2Id}-${outputId}`,
-          source: hidden2Id,
-          target: outputId,
-          type: 'weight',
-          data: { 
-            weight: Math.random() * 2 - 1,
-            isActive: isPlaying
-          },
-          animated: isPlaying,
-        });
-      });
-    });
-    
-    return edges;
-  }, [isPlaying]);
+    // Hidden to output connections
+    { id: 'h1-o1', source: 'neuron-1', target: 'output-1', type: 'weight', data: { weight: 0.5, isActive: true } },
+    { id: 'h2-o1', source: 'neuron-2', target: 'output-1', type: 'weight', data: { weight: -0.3, isActive: true } },
+    { id: 'h3-o1', source: 'neuron-3', target: 'output-1', type: 'weight', data: { weight: 0.7, isActive: true } },
+  ];
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -280,25 +109,7 @@ function NetworkContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleTh
     setEdges(initialEdges);
     setCurrentEpoch(0);
     setIsTraining(false);
-    setIsPlaying(false);
   };
-
-  const togglePlayback = () => {
-    setIsPlaying(!isPlaying);
-  };
-
-  const startTraining = () => {
-    setIsTraining(true);
-    setIsPlaying(true);
-  };
-
-  useEffect(() => {
-    setNodes(initialNodes);
-  }, [initialNodes, setNodes]);
-
-  useEffect(() => {
-    setEdges(initialEdges);
-  }, [initialEdges, setEdges]);
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -307,41 +118,35 @@ function NetworkContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleTh
 
   return (
     <div className={`h-screen w-full transition-colors duration-300 relative overflow-hidden ${
-       isDark ? 'bg-gradient-to-br from-slate-900 via-blue-950 to-purple-950 text-white' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 text-slate-900'
+       isDark ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-900'
     }`}>
       {/* Header */}
       <div className={`sticky top-4 mx-4 z-50 flex items-center justify-between backdrop-blur-md shadow-lg rounded-lg p-4 transition-colors duration-300 ${
         isDark ? 'bg-slate-800/70 border-slate-700/50' : 'bg-white/80 border-slate-300/60'
       }`}>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Brain className="w-8 h-8 text-blue-500" />
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
-              Interactive Neural Network Explorer
-            </h1>
-          </div>
+          <img 
+            src="/image.png" 
+            alt="Vizuara AI Labs" 
+            className="h-8"
+          />
+          <h1 className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+            Interactive Neural Network Learning
+          </h1>
         </div>
         <div className="flex items-center gap-4">
           <Button
-            onClick={togglePlayback}
+            onClick={() => setIsChatOpen(!isChatOpen)}
             variant="outline"
             size="sm"
             className={`flex items-center gap-2 transition-colors duration-150 ${
-              isPlaying ? 'bg-red-500/20 border-red-500/50 text-red-400' : 'bg-green-500/20 border-green-500/50 text-green-400'
+              isDark 
+                ? 'text-slate-300 border-slate-600 hover:bg-slate-700 hover:text-slate-100' 
+                : 'text-slate-700 border-slate-300 hover:bg-slate-200 hover:text-slate-900'
             }`}
           >
-            {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-            {isPlaying ? 'Pause' : 'Play'}
-          </Button>
-          <Button
-            onClick={startTraining}
-            variant="outline"
-            size="sm"
-            disabled={isTraining}
-            className="flex items-center gap-2 bg-purple-500/20 border-purple-500/50 text-purple-400"
-          >
-            <Zap className="w-4 h-4" />
-            {isTraining ? 'Training...' : 'Train'}
+            <MessageSquare className="w-4 h-4" />
+            {isChatOpen ? 'Close Chat' : 'Open Chat'}
           </Button>
           <Button
             onClick={resetNetwork}
@@ -360,8 +165,19 @@ function NetworkContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleTh
         </div>
       </div>
 
+      {/* Control Panel */}
+      <ControlPanel
+        learningRate={learningRate}
+        onLearningRateChange={setLearningRate}
+        activationFunction={activationFunction}
+        onActivationFunctionChange={setActivationFunction}
+        currentEpoch={currentEpoch}
+        isTraining={isTraining}
+        isDark={isDark}
+      />
+
       {/* Main content with flow */}
-      <div className="h-full pt-4 relative">
+      <div className="h-full pt-4">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -372,15 +188,13 @@ function NetworkContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleTh
           edgeTypes={edgeTypes}
           fitView
           minZoom={0.1}
-          maxZoom={4}
-          defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
-          className="neural-network-canvas"
+          maxZoom={2}
+          className="workflow-canvas"
         >
           <Background 
             gap={24}
             size={1.5}
-            color={isDark ? '#1e293b' : '#cbd5e1'}
-            variant="dots"
+            color={isDark ? '#334155' : '#cbd5e1'}
           />
           <MiniMap 
             nodeColor={(node) => {
@@ -401,24 +215,8 @@ function NetworkContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleTh
           <Controls />
         </ReactFlow>
 
-        {/* Control Panel */}
-        <ControlPanel
-          learningRate={learningRate}
-          onLearningRateChange={setLearningRate}
-          activationFunction={activationFunction}
-          onActivationFunctionChange={setActivationFunction}
-          currentEpoch={currentEpoch}
-          isTraining={isTraining}
-          isDark={isDark}
-        />
-
-        {/* Data Visualizer */}
-        <DataVisualizer
-          inputData={inputData}
-          onInputDataChange={setInputData}
-          isPlaying={isPlaying}
-          isDark={isDark}
-        />
+        {/* Floating Chatbot */}
+        <ChatBot isOpen={isChatOpen} />
       </div>
     </div>
   );
@@ -433,7 +231,7 @@ export function NeuralNetworkWorkflow() {
 
   return (
     <ThemeProvider isDark={isDark}>
-      <NetworkContent isDark={isDark} onToggleTheme={handleThemeToggle} />
+      <WorkflowContent isDark={isDark} onToggleTheme={handleThemeToggle} />
     </ThemeProvider>
   );
 }
