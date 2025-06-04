@@ -25,8 +25,8 @@ export function MatrixDisplay({ matrix, highlight }: MatrixDisplayProps) {
                 key={`${i}-${j}`}
                 className={`w-12 h-12 flex items-center justify-center text-sm font-mono rounded-md transition-colors duration-150 ${
                   highlight?.[i]?.[j]
-                    ? (isDark ? 'bg-blue-500/20 border border-blue-400/30 text-blue-300' : 'bg-blue-400/20 border border-blue-500/30 text-blue-700')
-                    : (isDark ? 'bg-slate-800/40 border border-slate-700/30 text-slate-300' : 'bg-slate-200/40 border border-slate-300/30 text-slate-700')
+                    ? (isDark ? 'text-blue-300 font-semibold' : 'text-blue-700 font-semibold')
+                    : (isDark ? 'text-slate-300' : 'text-slate-700')
                 }`}
               >
                 {/* Display only two decimal points */}
