@@ -1,4 +1,3 @@
-
 // FILE: src/components/MatrixDisplay.tsx
 import { motion } from 'framer-motion';
 import { useTheme } from '@/components/ThemeProvider';
@@ -23,10 +22,10 @@ export function MatrixDisplay({ matrix, highlight }: MatrixDisplayProps) {
             row.map((cell, j) => (
               <div
                 key={`${i}-${j}`}
-                className={`w-12 h-12 flex items-center justify-center text-sm font-mono rounded-md transition-colors duration-150 ${
+                className={`w-12 h-12 flex items-center justify-center text-sm font-mono rounded-md border transition-colors duration-150 ${
                   highlight?.[i]?.[j]
-                    ? (isDark ? 'text-blue-300 font-semibold' : 'text-blue-700 font-semibold')
-                    : (isDark ? 'text-slate-300' : 'text-slate-700')
+                    ? (isDark ? 'bg-blue-700/30 border-blue-500/70 text-blue-300' : 'bg-blue-100 border-blue-400 text-blue-700')
+                    : (isDark ? 'bg-slate-700/50 border-slate-600 text-slate-200' : 'bg-slate-100 border-slate-300 text-slate-800')
                 }`}
               >
                 {/* Display only two decimal points */}

@@ -168,14 +168,6 @@ function WorkflowContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleT
           onConnect={onConnect}
           nodeTypes={nodeTypes}
           fitView
-          fitViewOptions={{
-            padding: 0.3,
-            minZoom: 0.1,
-            maxZoom: 2
-          }}
-          minZoom={0.05}
-          maxZoom={3}
-          defaultViewport={{ x: 0, y: 0, zoom: 0.3 }}
           className="workflow-canvas"
         >
           <Background 
