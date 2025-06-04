@@ -1,8 +1,8 @@
 
-import { SelfAttentionWorkflow } from '@/components/SelfAttentionWorkflow';
+import { NeuralNetworkWorkflow } from '@/components/NeuralNetworkWorkflow';
 
 const Index = () => {
-  return <SelfAttentionWorkflow />;
+  return <NeuralNetworkWorkflow />;
 };
 
 export default Index;
