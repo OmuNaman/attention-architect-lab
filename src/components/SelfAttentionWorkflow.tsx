@@ -37,38 +37,53 @@ function WorkflowContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleT
   const processedNodes = useMemo(() => {
     return rawInitialNodes.map(node => {
       if (node.type === 'calculation') {
-        let disabled = false;
-        
-        // Enable first step calculations for each head
-        const enabledNodes = [
+        let disabled = true; // Default to disabled
+
+        // Enable first step calculations for each head (Q, K, V)
+        const initialCalcNodes = [
           'calc-q-head1', 'calc-k-head1', 'calc-v-head1',
           'calc-q-head2', 'calc-k-head2', 'calc-v-head2', 
           'calc-q-head3', 'calc-k-head3', 'calc-v-head3'
         ];
         
-        if (enabledNodes.includes(node.id)) {
+        if (initialCalcNodes.includes(node.id)) {
           disabled = false;
-        } else if (node.id === 'calc-scores-head1') {
-          disabled = !(completedNodeIds.has('calc-q-head1') && completedNodeIds.has('calc-k-head1'));
+        } 
+        // K-TRANSPOSE NODES (depend on their respective K calculation)
+        else if (node.id === 'k-transpose-head1') {
+            disabled = !completedNodeIds.has('calc-k-head1');
+        } else if (node.id === 'k-transpose-head2') {
+            disabled = !completedNodeIds.has('calc-k-head2');
+        } else if (node.id === 'k-transpose-head3') {
+            disabled = !completedNodeIds.has('calc-k-head3');
+        }
+        // SCORES NODES (depend on Q and K-Transpose) - THIS IS THE KEY CHANGE
+        else if (node.id === 'calc-scores-head1') {
+          disabled = !(completedNodeIds.has('calc-q-head1') && completedNodeIds.has('k-transpose-head1'));
         } else if (node.id === 'calc-scores-head2') {
-          disabled = !(completedNodeIds.has('calc-q-head2') && completedNodeIds.has('calc-k-head2'));
+          disabled = !(completedNodeIds.has('calc-q-head2') && completedNodeIds.has('k-transpose-head2'));
         } else if (node.id === 'calc-scores-head3') {
-          disabled = !(completedNodeIds.has('calc-q-head3') && completedNodeIds.has('calc-k-head3'));
-        } else if (node.id === 'calc-softmax-head1') {
+          disabled = !(completedNodeIds.has('calc-q-head3') && completedNodeIds.has('k-transpose-head3'));
+        } 
+        // SOFTMAX NODES (depend on Scores and V)
+        else if (node.id === 'calc-softmax-head1') {
           disabled = !(completedNodeIds.has('calc-scores-head1') && completedNodeIds.has('calc-v-head1'));
         } else if (node.id === 'calc-softmax-head2') {
           disabled = !(completedNodeIds.has('calc-scores-head2') && completedNodeIds.has('calc-v-head2'));
         } else if (node.id === 'calc-softmax-head3') {
           disabled = !(completedNodeIds.has('calc-scores-head3') && completedNodeIds.has('calc-v-head3'));
-        } else if (node.id === 'concat-matrix') {
+        } 
+        // CONCATENATION NODE
+        else if (node.id === 'concat-matrix') {
           disabled = !(completedNodeIds.has('calc-softmax-head1') && 
                       completedNodeIds.has('calc-softmax-head2') && 
                       completedNodeIds.has('calc-softmax-head3'));
-        } else if (node.id === 'calc-output') {
+        } 
+        // FINAL OUTPUT NODE
+        else if (node.id === 'calc-output') {
           disabled = !completedNodeIds.has('concat-matrix');
-        } else {
-          disabled = true;
         }
+        // All other calculation nodes remain disabled by default
         
         return {
           ...node,
@@ -81,21 +96,31 @@ function WorkflowContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleT
       }
       return node;
     });
-  }, [completedNodeIds, handleNodeComplete]);
+  }, [completedNodeIds, handleNodeComplete]); // rawInitialNodes is stable, not needed in deps here
 
   const [nodes, setNodes, onNodesChange] = useNodesState(processedNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const resetWorkflow = () => {
-    setNodes(
-      rawInitialNodes.map(node => ({
-        ...node,
-        data: {
-          ...node.data,
-          onComplete: handleNodeComplete,
-        },
-      }))
-    );
+    // Resetting nodes needs to re-apply the initial processedNodes logic
+    // or simply re-initialize with rawInitialNodes and let processedNodes recompute.
+    // For simplicity, we can re-set nodes based on rawInitialNodes which will trigger re-computation of processedNodes.
+    // The processedNodes logic itself will determine the initial disabled states.
+    const reinitializedNodes = rawInitialNodes.map(node => {
+      if (node.type === 'calculation') {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            onComplete: handleNodeComplete,
+            // The disabled state will be correctly set by the processedNodes logic
+            // when nodes are updated via setNodes below, or upon initial render.
+          }
+        };
+      }
+      return node;
+    });
+    setNodes(reinitializedNodes); // This will trigger useEffect below if we use processedNodes in it
     setEdges(initialEdges);
     setCompletedNodeIds(new Set());
   };
@@ -159,7 +184,7 @@ function WorkflowContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleT
       </div>
 
       {/* Main content with flow */}
-      <div className="h-full pt-4">
+      <div className="h-full pt-4"> {/* Adjusted to ensure ReactFlow has full height below header */}
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -168,7 +193,7 @@ function WorkflowContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleT
           onConnect={onConnect}
           nodeTypes={nodeTypes}
           fitView
-          className="workflow-canvas"
+          className="workflow-canvas" // Ensure this class doesn't conflict with height
         >
           <Background 
             gap={24}
@@ -180,7 +205,7 @@ function WorkflowContent({ isDark, onToggleTheme }: { isDark: boolean; onToggleT
               switch (node.type) {
                 case 'matrix': return isDark ? '#3b82f6' : '#2563eb';
                 case 'calculation': 
-                  const typedNode = node as Node<{ disabled?: boolean }>;
+                  const typedNode = node as Node<{ disabled?: boolean }>; // Make sure to cast
                   return typedNode.data?.disabled 
                     ? (isDark ? '#475569' : '#94a3b8')
                     : (isDark ? '#8b5cf6' : '#7c3aed');
